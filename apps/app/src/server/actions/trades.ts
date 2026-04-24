@@ -69,7 +69,7 @@ export async function updateTradeRecord(
         await db
             .update(TradeTable)
             .set({ ...data })
-            .where(eq(TradeTable.id, tradeId));
+            .where(and(eq(TradeTable.id, tradeId), eq(TradeTable.userId, userId)));
     } catch (err) {
         console.log(err);
         return { error: true };
@@ -85,6 +85,15 @@ export async function deleteTradeRecord(
     } catch (err) {
         console.log(err);
         return { error: true };
+    }
+    return;
+}
+e.log(err);
+        return { error: true };
+    }
+    return;
+}
+;
     }
     return;
 }

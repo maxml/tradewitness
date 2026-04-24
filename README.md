@@ -1,70 +1,68 @@
 # TradeWitness
 
-Система для усвідомленого трейдингу. Фіксує угоди через скріншоти та
-створює публічний рейтинг довіри, який неможливо підробити.
+TradeWitness is an AI-powered trading journal and mentorship CRM. Traders can upload screenshots of their trades (to be parsed via OCR), track their win rate, build their equity curve, and generate a "Discipline Score" for mentors to review.
 
-## Architecture
+This project is structured as a **Turborepo Monorepo**, containing a Landing Page (`apps/landing`) and the main SaaS application (`apps/app`).
 
+## Tech Stack
+- **Framework:** Next.js 15 & 16 (App Router)
+- **Language:** TypeScript
+- **Monorepo:** Turborepo + pnpm
+- **Database:** Supabase (PostgreSQL) + Drizzle ORM
+- **Object Storage:** Cloudflare R2
+- **Auth:** Clerk
+- **Styling:** Tailwind CSS
+
+## Folder Structure
 ```
-tradewitness-mono/
+tradewitness/
 ├── apps/
-│   ├── landing/         # Next 16 + Tailwind v4 + Supabase — marketing site + blog
-│   └── app/             # Next 15 + Tailwind v3 + Clerk + Neon/Drizzle — web app (SaaS)
-└── packages/
-    └── api-types/       # Shared Zod schemas (Trade, TradeInput, etc.)
+│   ├── app/           # The Trading Journal SaaS (Next.js 15, Drizzle, Clerk, R2)
+│   └── landing/       # Marketing Landing Page & Blog (Next.js 16, Supabase Client)
+├── packages/
+│   └── api-types/     # Shared Zod schemas and TypeScript types
+├── docs/              # Architecture Decisions (ADRs) and Task Plans
 ```
 
-A separate desktop collector (Electron/Tauri) lives outside this repo and
-POSTs `TradeInput` (see `packages/api-types`) to the web app's API.
+## Local Setup Instructions (Under 30 Minutes)
 
-## Prerequisites
+### Prerequisites
+1. **Node.js** (v20.x or v22.x)
+2. **pnpm** (v9.x) - `npm install -g pnpm@9`
+3. A **Supabase** account (Free tier)
+4. A **Clerk** account (Free tier)
+5. A **Cloudflare R2** account (Free tier)
 
-- Node.js 20+
-- pnpm 9+
-- Accounts on: [Neon](https://neon.tech), [Clerk](https://clerk.com),
-  [Supabase](https://supabase.com), [Anthropic](https://console.anthropic.com)
-
-## Setup
-
+### 1. Environment Variables
+Copy the `.env.example` file to `.env.local` in both `apps/landing` and `apps/app`, then fill in your actual keys.
 ```bash
-# 1. Install
+cp .env.example apps/app/.env.local
+cp .env.example apps/landing/.env.local
+```
+*(Refer to `.env.example` in the root for the required keys).*
+
+### 2. Install Dependencies
+Run pnpm install from the root. This will install dependencies for all workspace apps.
+```bash
 pnpm install
+```
 
-# 2. Fill env vars
-cp apps/landing/.env.example apps/landing/.env.local
-cp apps/app/.env.example apps/app/.env.local
-# Edit both .env.local files with real credentials
+### 3. Database Migrations
+Create the tables in your Supabase database by running the Drizzle migrations:
+```bash
+pnpm --filter @tradewitness/app db:migrate
+```
+*CRITICAL:* Go to your Supabase Dashboard -> SQL Editor and **disable Row Level Security (RLS)** for all newly created tables (e.g., `user`, `trades`, `strategies`), as auth is handled entirely by Clerk.
 
-# 3. Initialize databases
-# Supabase: paste apps/landing/supabase-schema.sql into SQL editor
-# Neon:
-pnpm --filter @tradewitness/app db:push
-
-# 4. Run
+### 4. Run the Development Server
+Start both applications simultaneously:
+```bash
 pnpm dev
 ```
+- Landing Page: `http://localhost:3000`
+- Web App (Journal): `http://localhost:3001`
 
-After `pnpm dev`:
-- http://localhost:3000 — landing / blog
-- http://localhost:3001 — web app
-
-## Scripts
-
-- `pnpm dev` — both apps in watch mode via Turborepo
-- `pnpm build` — production build for both
-- `pnpm lint` — lint both workspaces
-- `pnpm --filter @tradewitness/app db:studio` — Drizzle Studio for Neon DB
-
-## Upstream attributions
-
-This repo is a hard fork of two open-source projects — see `NOTICE` and
-`UPSTREAM.md`. We do not maintain sync with upstream.
-
-## License
-
-Dual-licensed:
-
-- Open source under **AGPL-3.0-or-later** (see `LICENSE`)
-- Commercial license available (see `LICENSE-COMMERCIAL.md`)
-
-Contact: maxafinin@gmail.com
+### Troubleshooting
+- **`url is required` error during migrations:** Ensure your `apps/app/.env.local` contains a valid `DATABASE_URL` pointing to your Supabase instance (Port 5432).
+- **`too many clients already` error in Supabase:** This happens if you remove the `globalThis` connection caching from `db.ts` and Next.js hot-reloads too many times. Restart your dev server.
+- **R2 `SignatureDoesNotMatch`:** Ensure your R2 Bucket is public and your R2 credentials have `Object Read & Write` permissions.
