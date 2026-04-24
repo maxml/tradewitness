@@ -15,16 +15,15 @@ This document outlines the high-level tasks and current progress for the TradeWi
   - Implemented **Cloudflare R2** for screenshot storage using lightweight `aws4fetch` (no heavy AWS SDK).
   - Retained **Clerk** for authentication.
 
+- **Task 3: AI IDE Integration & Project Onboarding (Homework M2)**
+  - Created `GEMINI.md` rules file, updated `README.md` and `.env.example`.
+  - Generated `FINDINGS.md` and fixed IDOR vulnerabilities and missing error handling in `trades.ts`.
+  - Upgraded ESLint to Flat Config (`eslint.config.mjs`).
+  - Generated Architecture Decision Records (ADR) and Mermaid diagrams.
+
 ---
 
 ## 🟡 Upcoming Tasks
-
-### Task 3: AI IDE Integration & Project Onboarding (Homework M2)
-- Configure the repository to act as a perfect partner for AI-IDEs (like Cursor, Gemini CLI, Claude Code).
-- **Block 1:** Generate and refine a rules file (`GEMINI.md`).
-- **Block 2:** Update `README.md` and `.env.example` with clear, reproducible local setup instructions.
-- **Block 3:** Generate `FINDINGS.md` by hunting for bugs/tech debt, and fix at least one issue via AI.
-- **Nice-To-Have:** Generate Mermaid architecture diagrams and MADR (Architecture Decision Records).
 
 ### Task 4: AI Decoupling & BYOAI (Bring Your Own AI)
 - Remove hard dependency on paid Anthropic API (`@anthropic-ai/sdk`).
