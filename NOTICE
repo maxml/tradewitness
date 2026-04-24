@@ -1,0 +1,23 @@
+TradeWitness
+Copyright 2026 Maksym Afinin
+
+This repository is a hard fork combining two open-source projects as a
+monorepo. Upstream attributions by directory:
+
+  apps/landing/
+    Derived from pranata-dev/personal-website
+    Original copyright (c) pranata-dev and contributors
+    Licensed under the MIT License
+    https://github.com/pranata-dev/personal-website
+    See apps/landing/LICENSE for full text.
+
+  apps/app/
+    Derived from Bilovodskyi/ai-trading-journal
+    Original copyright (c) Bilovodskyi and contributors
+    Licensed under the Apache License, Version 2.0
+    https://github.com/Bilovodskyi/ai-trading-journal
+    See apps/app/LICENSE and apps/app/NOTICE for full terms.
+
+The root project (this combined work) is dual-licensed under
+AGPL-3.0-or-later and a commercial license. See LICENSE and
+LICENSE-COMMERCIAL.md for details.

@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* Dark mode configuration for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #404040;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Base styles - Light mode default */
+/* Base styles - Light mode default */
+body {
+  background-color: #f8f9fb;
+  color: #171717;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E");
+}
+
+/* Dark mode overrides */
+.dark body {
+  background-color: #050505;
+  color: #ffffff;
+  background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 75%), url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  background-blend-mode: normal, overlay;
+}
+
+/* Selection */
+::selection {
+  @apply bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100;
+}
+
+/* Focus styles */
+*:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-neutral-950;
+}
+
+/* Prose styling for blog */
+.prose {
+  @apply max-w-none;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply text-neutral-900 dark:text-white font-bold;
+}
+
+.prose h1 {
+  @apply text-3xl md:text-4xl mb-6;
+}
+
+.prose h2 {
+  @apply text-2xl md:text-3xl mt-12 mb-4;
+}
+
+.prose h3 {
+  @apply text-xl md:text-2xl mt-8 mb-3;
+}
+
+.prose p {
+  @apply text-neutral-600 dark:text-neutral-400 mb-4 leading-relaxed;
+}
+
+.prose a {
+  @apply text-blue-600 dark:text-blue-400 hover:underline;
+}
+
+.prose ul,
+.prose ol {
+  @apply text-neutral-600 dark:text-neutral-400 mb-4 pl-6 space-y-2;
+}
+
+.prose li {
+  @apply leading-relaxed;
+}
+
+.prose code {
+  @apply px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-sm font-mono;
+}
+
+.prose pre {
+  @apply bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 overflow-x-auto mb-4;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-neutral-200 dark:border-neutral-700 pl-4 italic text-neutral-500 dark:text-neutral-400 my-4;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Line clamp */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

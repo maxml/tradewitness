@@ -1,0 +1,121 @@
+{
+  "id": "2527124e-b2b2-40c1-9798-09bf5dfe8990",
+  "prevId": "928f7b2d-f025-4eca-bb53-f2257b8b9dc2",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.trades": {
+      "name": "trades",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "positionType": {
+          "name": "positionType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "openDate": {
+          "name": "openDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "openTime": {
+          "name": "openTime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "closeDate": {
+          "name": "closeDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "closeTime": {
+          "name": "closeTime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instrumentName": {
+          "name": "instrumentName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deposit": {
+          "name": "deposit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "userIdCloseDateIndex": {
+          "name": "userIdCloseDateIndex",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "closeDate",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

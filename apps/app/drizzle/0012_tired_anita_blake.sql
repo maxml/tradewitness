@@ -1,0 +1,1 @@
+ALTER TABLE "strategies" ALTER COLUMN "id" DROP DEFAULT;
