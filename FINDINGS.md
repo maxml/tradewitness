@@ -1,0 +1,9 @@
+# FINDINGS — TradeWitness
+
+| # | Риск | Где | Что | Как фиксить | Статус |
+|---|------|-----|-----|-------------|--------|
+| 1 | 🔴 | `apps/app/src/server/actions/trades.ts::updateTradeRecord` | Вразливість IDOR (BOLA). Функція оновлює запис за `tradeId`, але не перевіряє `userId`. Будь-який авторизований юзер може змінити чужий трейд, передавши його ID. | Додати `and(eq(TradeTable.id, tradeId), eq(TradeTable.userId, userId))` у метод `.where()`. | ✅ fixed in commit |
+| 2 | 🔴 | `apps/app/src/server/actions/trades.ts::deleteTradeRecord` | Вразливість IDOR (BOLA). Аналогічно до проблеми #1, функція видаляє запис лише за `recordId` без перевірки власника (`userId`), що дозволяє видаляти чужі дані. | Передати `userId` з `auth()` та додати перевірку `eq(TradeTable.userId, userId)`. | ✅ fixed in commit |
+| 3 | 🟡 | `apps/app/src/server/actions/trades.ts::createNewTradeRecord` | Відсутній `try/catch` при виконанні `db.insert(...)`. Якщо база даних недоступна або порушено унікальний констрейнт, серверна дія впаде з 500 помилкою без graceful-повернення { error: true }. | Огорнути `db.insert` у блок `try/catch` і повертати помилку. | ✅ fixed in commit |
+| 4 | 🟡 | `apps/app/package.json` | Застарілі залежності (Outdated Deps). Використовується застарілий `eslint@8.x` (коли Next.js вже працює з Flat Config та Eslint 9). | Оновити eslint до 9.x і переписати конфігурацію на Flat Config. | ✅ fixed in commit |
+| 5 | 🟢 | `turbo.json` | Hardcoded Values: масив `globalEnv` містить змінні, які вже не використовуються або змінилися (наприклад, `ANTHROPIC_API_KEY` замість `CLAUDE_API_KEY`), що ламає кешування. | Оновити список змінних у `turbo.json` відповідно до реального `.env.local`. | ✅ fixed in commit |
