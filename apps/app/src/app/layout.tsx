@@ -21,8 +21,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={`${mainFont.className} antialiased`}>
+        <html lang="en" suppressHydrationWarning>
+            <body className={`${mainFont.className} antialiased`} suppressHydrationWarning>
                 <ReduxProvider>
                     <ClerkProvider>{children}</ClerkProvider>
                 </ReduxProvider>

@@ -148,3 +148,44 @@ export const JournalTable = pgTable(
         ),
     })
 );
+
+export const projectsTable = pgTable("projects", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    description: text("description"),
+    techStack: text("tech_stack").array().default([]),
+    category: text("category").default('web-dev'),
+    githubUrl: text("github_url"),
+    demoUrl: text("demo_url"),
+    imageUrl: text("image_url"),
+    featured: boolean("featured").default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => ({
+    categoryIdx: index("idx_projects_category").on(table.category),
+    featuredIdx: index("idx_projects_featured").on(table.featured),
+}));
+
+export const blogPostsTable = pgTable("blog_posts", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    slug: text("slug").unique().notNull(),
+    excerpt: text("excerpt"),
+    content: text("content"),
+    category: text("category").default('tech-ai'),
+    published: boolean("published").default(false),
+    views: integer("views").default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => ({
+    slugIdx: index("idx_blog_posts_slug").on(table.slug),
+    categoryIdx: index("idx_blog_posts_category").on(table.category),
+}));
+
+export const contactSubmissionsTable = pgTable("contact_submissions", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    message: text("message").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});

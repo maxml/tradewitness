@@ -4,6 +4,11 @@ TradeWitness is an AI-powered trading journal and mentorship CRM. Traders can up
 
 This project is structured as a **Turborepo Monorepo**, containing a Landing Page (`apps/landing`) and the main SaaS application (`apps/app`).
 
+## TradeWitness: тизер 
+
+Бізнес частину можна подивитися тут
+https://docs.google.com/document/d/1C0s24ybrPqt_QD-xdNixN-LeafoUisFilfd3Galj6C4/edit?tab=t.0
+
 ## Tech Stack
 - **Framework:** Next.js 15 & 16 (App Router)
 - **Language:** TypeScript

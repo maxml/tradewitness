@@ -2,7 +2,7 @@
 
 import { db } from "@/drizzle/db";
 import { TradeTable } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { newTradeFormSchema } from "@/zodSchema/schema";
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
@@ -85,15 +85,6 @@ export async function deleteTradeRecord(
     } catch (err) {
         console.log(err);
         return { error: true };
-    }
-    return;
-}
-e.log(err);
-        return { error: true };
-    }
-    return;
-}
-;
     }
     return;
 }

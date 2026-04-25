@@ -49,13 +49,30 @@ fi
 
 # ── 1. Connectivity ───────────────────────────────────────────────────
 printf "\n── 1. Connectivity\n"
-if psql "$DATABASE_URL" -tAc "select 1" >/dev/null 2>&1; then
+ERR_OUTPUT="$(psql "$DATABASE_URL" -tAc "select 1" 2>&1 >/dev/null || true)"
+if [ -z "$ERR_OUTPUT" ]; then
   pass "psql connects; select 1 OK"
 else
-  fail "cannot connect — check DATABASE_URL (host/password/SSL)"
+  fail "cannot connect"
   echo ""
-  echo "Last psql error:"
-  psql "$DATABASE_URL" -tAc "select 1" || true
+  echo "psql said:"
+  echo "$ERR_OUTPUT" | sed 's/^/    /'
+
+  # Detect the IPv6-only direct-connection trap on Supabase free tier
+  if echo "$ERR_OUTPUT" | grep -qiE 'network is unreachable|no route to host'; then
+    HOST="$(echo "$DATABASE_URL" | sed -E 's#.*@([^:/]+).*#\1#')"
+    if echo "$HOST" | grep -qE '^db\.[a-z0-9]+\.supabase\.co$'; then
+      printf "\n  ${YEL}Likely cause:${RESET} Supabase free tier exposes ${HOST} on IPv6 only,\n"
+      printf "  and IPv6 is unreachable from this machine.\n\n"
+      printf "  Fix: switch DATABASE_URL to the Supabase pooler (it has IPv4).\n"
+      printf "    Direct  (IPv6-only on free):   ${HOST}:5432\n"
+      printf "    Session pooler (IPv4, OK for migrations):\n"
+      printf "                  aws-0-<REGION>.pooler.supabase.com:5432\n"
+      printf "                  user format: postgres.<PROJECT-REF>\n"
+      printf "    Get the exact string in Supabase Dashboard → Project Settings → Database\n"
+      printf "                                    → Connection string → Session\n"
+    fi
+  fi
   exit 1
 fi
 

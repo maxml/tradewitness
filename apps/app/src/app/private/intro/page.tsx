@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { useFormStatus } from "react-dom";
 import Image from "next/image";
 import { Handshake, MessageCircle, Star } from "lucide-react";
 import { completeOnboarding } from "@/server/actions/user";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const STEPS = [
     {
-        title: "Welcome to TradeJournal",
+        title: "Welcome to TradeWitness",
         body: "A quick tour of our main features. Let's get started!",
+        image: "/main-logo.png",
     },
     {
         title: "Step 1: Calendar",
@@ -57,9 +57,18 @@ const STEPS = [
 
 export default function Page() {
     const [step, setStep] = useState(0);
+    const router = useRouter();
+    const [finishing, startFinish] = useTransition();
     const total = STEPS.length;
     const isFirst = step === 0;
     const isLast = step === total - 1;
+
+    const finishOnboarding = () => {
+        startFinish(async () => {
+            await completeOnboarding();
+            router.push("/private/calendar");
+        });
+    };
 
     // Optional: arrow-key navigation
     useEffect(() => {
@@ -73,43 +82,61 @@ export default function Page() {
 
     return (
         <div className="mx-auto flex h-full w-full flex-col p-12 absolute top-0 left-0 right-0 bottom-0 bg-white z-[9999]">
-            <main className="flex-1" aria-live="polite">
-                <h2 className="mb-2 text-xl font-medium">{STEPS[step].title}</h2>
-                <p className="text-tertiary text-sm">{STEPS[step].body}</p>
-            </main>
-            {STEPS[step].image && (
-                <div className="w-full h-full flex items-center justify-center">
-                    <Image src={STEPS[step].image} alt={STEPS[step].title} width={1200} height={1200} />
-                </div>
-            )}
-            {STEPS[step].video && (
-                <div className="w-full h-full flex items-center justify-center">
-                    <video src={STEPS[step].video} width={1000} height={1000} autoPlay loop muted playsInline />
-                </div>
-            )}
-            {STEPS[step].last && (
-                <div className="w-full h-full flex items-center justify-center gap-12">
-                    <div className="flex flex-col gap-2 p-8 border border-zinc-300 rounded-xl w-[300px] h-[240px]">
-                        <MessageCircle size={24} />
-                        <h1 className="text-2xl font-bold mb-2">Feedback</h1>
-                        <p className="text-sm text-zinc-500">Leave feedback on the Feedback page or open an issue on Github, every message is valuable and can spark real change.</p>
+            <div className="text-center mb-8">
+                <h2 className="mb-2 text-3xl font-bold">{STEPS[step].title}</h2>
+                <p className="text-zinc-500 text-lg">{STEPS[step].body}</p>
+            </div>
+            
+            <div className="flex-1 flex items-center justify-center relative overflow-hidden">
+                {STEPS[step].image && (
+                    <Image 
+                        src={STEPS[step].image} 
+                        alt={STEPS[step].title} 
+                        width={800} 
+                        height={600} 
+                        className="object-contain max-h-full transition-all duration-500 shadow-2xl rounded-2xl border border-zinc-100" 
+                    />
+                )}
+                {STEPS[step].video && (
+                    <video 
+                        src={STEPS[step].video} 
+                        width={900} 
+                        autoPlay 
+                        loop 
+                        muted 
+                        playsInline 
+                        className="rounded-2xl shadow-2xl border border-zinc-100 max-h-full"
+                    />
+                )}
+                {STEPS[step].last && (
+                    <div className="w-full h-full flex items-center justify-center gap-6 flex-wrap">
+                        <div className="flex flex-col gap-2 p-6 border border-zinc-200 rounded-xl w-[280px] hover:bg-zinc-50 transition-colors">
+                            <MessageCircle size={32} className="text-blue-500" />
+                            <h1 className="text-xl font-bold">Feedback</h1>
+                            <p className="text-sm text-zinc-500">Every message is valuable and can spark real change.</p>
+                        </div>
+                        <div className="flex flex-col gap-2 p-6 border border-zinc-200 rounded-xl w-[280px] hover:bg-zinc-50 transition-colors">
+                            <Star size={32} className="text-yellow-500" />
+                            <h1 className="text-xl font-bold">GitHub</h1>
+                            <p className="text-sm text-zinc-500">Stars help us prioritize and build new features.</p>
+                        </div>
+                        <div className="flex flex-col gap-2 p-6 border border-zinc-200 rounded-xl w-[280px] hover:bg-zinc-50 transition-colors">
+                            <Handshake size={32} className="text-green-500" />
+                            <h1 className="text-xl font-bold">Collab</h1>
+                            <p className="text-sm text-zinc-500">We love working with passionate people.</p>
+                        </div>
                     </div>
-                    <div className="flex flex-col gap-2 p-8 border border-zinc-300 rounded-xl w-[300px] h-[240px]">
-                        <Star size={24} />
-                        <h1 className="text-2xl font-bold mb-2">GitHub</h1>
-                        <p className="text-sm text-zinc-500">Give us a star on GitHub — more stars help us prioritize and build new features.</p>
-                    </div>
-                    <div className="flex flex-col gap-2 p-8 border border-zinc-300 rounded-xl w-[300px] h-[240px]">
-                        <Handshake size={24} />
-                        <h1 className="text-2xl font-bold mb-2">Collaboration</h1>
+                )}
+            </div>
 
-                        <p className="text-sm text-zinc-500">Open to collaboration — create a GitHub issue to request a collab; we love working with passionate people.</p>
-                    </div>
-                </div>
-            )}
-
-            <footer className="flex items-center justify-end">
-                {/* Back (hidden on first) */}
+            <footer className="flex items-center justify-between">
+                {!isLast ? (
+                    <Button variant="ghost" onClick={finishOnboarding} disabled={finishing}>
+                        {finishing ? "Skipping…" : "Skip"}
+                    </Button>
+                ) : (
+                    <span />
+                )}
                 <div className="flex items-center gap-2">
                     {!isFirst && (
                         <Button variant="outline" onClick={() => setStep((s) => Math.max(0, s - 1))}>
@@ -119,10 +146,9 @@ export default function Page() {
                     {!isLast ? (
                         <Button onClick={() => setStep((s) => Math.min(total - 1, s + 1))}>Next</Button>
                     ) : (
-                        <form action={async () => { await completeOnboarding(); redirect("/private/calendar") }}>
-                            <input type="hidden" name="redirectTo" />
-                            <StartButton />
-                        </form>
+                        <Button onClick={finishOnboarding} disabled={finishing}>
+                            {finishing ? "Starting…" : "Start Journal"}
+                        </Button>
                     )}
                 </div>
             </footer>
@@ -150,14 +176,5 @@ export default function Page() {
                 })}
             </ol>
         </div>
-    );
-}
-
-function StartButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" disabled={pending}>
-            {pending ? "Starting…" : "Start Journal"}
-        </Button>
     );
 }
