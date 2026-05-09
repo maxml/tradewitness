@@ -18,7 +18,13 @@ export async function createNewTradeRecord(
         return { error: true };
     }
 
-    await db.insert(TradeTable).values({ ...data, userId, id });
+    try {
+        await db.insert(TradeTable).values({ ...data, userId, id });
+    } catch (err) {
+        console.log(err);
+        return { error: true };
+    }
+    return;
 }
 
 export async function getAllTradeRecords(): Promise<Trades[]> {
