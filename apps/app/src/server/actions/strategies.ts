@@ -8,7 +8,7 @@ import {
     GetStrategiesResult,
 } from "@/types/strategies.types";
 import { auth } from "@clerk/nextjs/server";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 export async function saveStrategy({
     openPositionRules,
@@ -114,8 +114,18 @@ export async function deleteStrategyFromDB(
 ): Promise<DeleteStrategyFromDBResult | null> {
     if (!strategyId) return null;
 
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized" };
+
     try {
-        await db.delete(StrategyTable).where(eq(StrategyTable.id, strategyId));
+        await db
+            .delete(StrategyTable)
+            .where(
+                and(
+                    eq(StrategyTable.id, strategyId),
+                    eq(StrategyTable.userId, userId)
+                )
+            );
 
         return {
             success: true,
@@ -165,7 +175,12 @@ export async function editStrategy({
             closePositionRules,
             strategyName,
             description,
-        }).where(eq(StrategyTable.id, id));
+        }).where(
+            and(
+                eq(StrategyTable.id, id),
+                eq(StrategyTable.userId, userIdFromAuth)
+            )
+        );
 
         return {
             success: true,
