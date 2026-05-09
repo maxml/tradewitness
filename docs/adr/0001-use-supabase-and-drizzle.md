@@ -1,4 +1,7 @@
-# Architecture Decisions Record
+# ADR 0001 — Supabase Postgres + Drizzle ORM
+
+- **Status:** Accepted
+- **Confidence:** HIGH — both choices are explicit in `apps/app/package.json` (`drizzle-orm`, `postgres`), the migration history under `apps/app/src/drizzle/migrations/`, and the Supabase URL pattern in `.env.example`.
 
 ## 1. Context
 

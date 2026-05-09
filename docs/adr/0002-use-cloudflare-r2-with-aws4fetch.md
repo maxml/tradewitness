@@ -1,4 +1,7 @@
-# Architecture Decisions Record
+# ADR 0002 — Cloudflare R2 via aws4fetch (no AWS SDK)
+
+- **Status:** Accepted
+- **Confidence:** HIGH — `aws4fetch` is pinned in `apps/app/package.json`; `@aws-sdk/client-s3` is intentionally absent. R2 endpoint and bucket env vars live in `.env.example`.
 
 ## 1. Context
 
