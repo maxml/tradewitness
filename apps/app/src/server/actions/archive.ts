@@ -2,7 +2,8 @@
 import { db } from "@/drizzle/db";
 import { ReportsTable } from "@/drizzle/schema";
 import { ReportsEntry, ReportType } from "@/types/tradeAI.types";
-import { desc, eq } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
+import { and, desc, eq } from "drizzle-orm";
 
 type ReportsSuccess = {
     success: true;
@@ -128,9 +129,15 @@ export async function addRemoveFavorite(
 ): Promise<DeleteAddFAvoriteReportResult | null> {
     if (!reportId) return null;
 
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized" };
+
     try {
         const report = await db.query.ReportsTable.findFirst({
-            where: eq(ReportsTable.id, reportId),
+            where: and(
+                eq(ReportsTable.id, reportId),
+                eq(ReportsTable.userId, userId)
+            ),
         });
 
         if (!report) return null;
@@ -140,7 +147,12 @@ export async function addRemoveFavorite(
             .set({
                 isFavorite: !report.isFavorite,
             })
-            .where(eq(ReportsTable.id, reportId))
+            .where(
+                and(
+                    eq(ReportsTable.id, reportId),
+                    eq(ReportsTable.userId, userId)
+                )
+            )
             .execute();
 
         return {
@@ -160,8 +172,18 @@ export async function deleteReportFromDB(
 ): Promise<DeleteAddFAvoriteReportResult | null> {
     if (!reportId) return null;
 
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized" };
+
     try {
-        await db.delete(ReportsTable).where(eq(ReportsTable.id, reportId));
+        await db
+            .delete(ReportsTable)
+            .where(
+                and(
+                    eq(ReportsTable.id, reportId),
+                    eq(ReportsTable.userId, userId)
+                )
+            );
 
         return {
             success: true,
