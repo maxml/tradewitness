@@ -80,8 +80,15 @@ export async function updateTradeRecord(
 export async function deleteTradeRecord(
     recordId: string
 ): Promise<{ error: boolean } | undefined> {
+    const { userId } = await auth();
+    if (userId == null) {
+        return { error: true };
+    }
+
     try {
-        await db.delete(TradeTable).where(eq(TradeTable.id, recordId));
+        await db
+            .delete(TradeTable)
+            .where(and(eq(TradeTable.id, recordId), eq(TradeTable.userId, userId)));
     } catch (err) {
         console.log(err);
         return { error: true };
