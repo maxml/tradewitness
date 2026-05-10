@@ -63,10 +63,10 @@ export async function PATCH(req: NextRequest) {
     if (status !== undefined) {
       const parsedStatus = FeatureFlagStateSchema.safeParse(status);
       if (!parsedStatus.success) return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-
+      
       const result = graph.validateStateChange(name, parsedStatus.data);
       if (!result.allowed) return NextResponse.json({ error: result.reason }, { status: 400 });
-
+      
       nextStatus = parsedStatus.data;
       if (nextStatus === "Disabled" && traffic_percentage === undefined) {
         nextTraffic = 0;
@@ -77,7 +77,6 @@ export async function PATCH(req: NextRequest) {
       if (!Number.isInteger(traffic_percentage) || traffic_percentage < 0 || traffic_percentage > 100) {
         return NextResponse.json({ error: "Invalid traffic_percentage" }, { status: 400 });
       }
-
       nextTraffic = traffic_percentage;
     }
 

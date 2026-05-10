@@ -49,7 +49,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "search_project_docs",
-        description: "Searches the TradeWitness documentation corpus using semantic RAG. You MUST call this tool whenever you need to learn about product features, architecture, feature flags, or incident histories. Do NOT call this tool to read literal code or state files. Output includes matching document excerpts along with their file sources and parent headings. Use this before modifying any feature flags to understand their purpose and dependencies.",
+        description: [
+          "Searches the TradeWitness documentation corpus using semantic RAG.",
+          "When to call: Call this tool whenever you need to learn about product features, architecture, feature flags, or incident histories.",
+          "When NOT to call: Do NOT call this tool to read literal code or state files.",
+          "Inputs: { query: string, top_k?: number }. 'query' is your semantic search string. 'top_k' is optional, default 5.",
+          "Output: Text containing a formatted list of matching document excerpts, file sources, and parent headings.",
+          "Example: search_project_docs({ query: 'stripe_billing_v1 dependencies and purpose' })",
+          "You MUST use this before modifying any feature flags to understand their purpose and dependencies."
+        ].join("\n"),
         inputSchema: {
           type: "object",
           properties: {
