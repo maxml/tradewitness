@@ -11,6 +11,16 @@ const EMBEDDING_PROVIDER = process.env.EMBEDDING_PROVIDER || 'bge-m3';
 
 const client = new QdrantClient({ url: QDRANT_URL, apiKey: QDRANT_API_KEY });
 
+let bgeEmbedderPromise: Promise<any> | undefined;
+
+async function getBgeEmbedder() {
+  if (!bgeEmbedderPromise) {
+    const { pipeline } = await import('@xenova/transformers');
+    bgeEmbedderPromise = pipeline('feature-extraction', 'Xenova/bge-m3');
+  }
+  return bgeEmbedderPromise;
+}
+
 async function getEmbedding(text: string): Promise<number[]> {
   if (EMBEDDING_PROVIDER === 'openai') {
     const OpenAI = (await import('openai')).default;
@@ -21,9 +31,7 @@ async function getEmbedding(text: string): Promise<number[]> {
     });
     return response.data[0].embedding;
   } else {
-    // bge-m3 via xenova
-    const { pipeline } = await import('@xenova/transformers');
-    const embedder = await pipeline('feature-extraction', 'Xenova/bge-m3');
+    const embedder = await getBgeEmbedder();
     const output = await embedder(text, { pooling: 'mean', normalize: true });
     return Array.from(output.data);
   }
@@ -45,8 +53,11 @@ async function search(query: string, limit: number = 3) {
     console.log(`\nResult ${idx + 1} (Score: ${result.score.toFixed(4)})`);
     console.log(`Source: ${p.source_file}`);
     console.log(`Type: ${p.type}`);
-    console.log(`Summary: ${p.summary}`);
-    console.log(`Headings: ${p.parent_headings?.join(' > ')}`);
+      console.log(`Summary: ${p.summary}`);
+      console.log(`Headings: ${p.parent_headings?.join(' > ')}`);
+      if (p.content) {
+        console.log(`Excerpt: ${String(p.content).slice(0, 700)}`);
+      }
   });
 }
 
@@ -64,4 +75,7 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

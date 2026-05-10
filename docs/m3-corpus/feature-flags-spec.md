@@ -12,23 +12,28 @@ This document outlines the 25 feature flags used in TradeWitness to manage rollo
 
 Feature flags in TradeWitness are highly interdependent. The following dependency graph must be strictly respected when changing state (e.g. from Disabled to Testing or Enabled). A feature cannot be moved to Testing or Enabled if any of its dependencies are currently Disabled.
 
-1. `tokens_purchase_v1` depends on `stripe_billing_v1`.
-2. `stripe_webhooks_v1` depends on `stripe_billing_v1`.
-3. `stripe_billing_v1` depends on `auth_clerk_v1`.
-4. `search_v2` depends on `trade_journal_core_v1`.
-5. `mentor_public_profile_v1` depends on `trade_journal_core_v1`.
-6. `discipline_score_v1` depends on `trade_journal_core_v1`.
-7. `desktop_collector_v1` depends on `screenshots_r2_upload_v1`.
-8. `screenshots_r2_upload_v1` depends on `r2_storage_v1` AND `trade_journal_core_v1`.
+1. `trade_journal_core_v1` depends on `auth_clerk_v1` AND `supabase_runtime_v1`.
+2. `search_v2` depends on `trade_journal_core_v1`.
+3. `strategies_v1` depends on `trade_journal_core_v1`.
+4. `custom_trade_fields_v1` depends on `trade_journal_core_v1`.
+5. `calendar_analytics_v1` depends on `trade_journal_core_v1`.
+6. `history_filters_v1` depends on `trade_journal_core_v1`.
+7. `statistics_summary_v1` depends on `trade_journal_core_v1`.
+8. `screenshots_r2_upload_v1` depends on `trade_journal_core_v1` AND `r2_storage_v1`.
 9. `ai_report_prompt_v1` depends on `trade_journal_core_v1`.
 10. `ai_report_followup_v1` depends on `ai_report_prompt_v1`.
-11. `custom_trade_fields_v1` depends on `trade_journal_core_v1`.
-12. `calendar_analytics_v1` depends on `trade_journal_core_v1`.
-13. `history_filters_v1` depends on `trade_journal_core_v1`.
-14. `statistics_summary_v1` depends on `trade_journal_core_v1`.
-15. `admin_feature_dashboard_v1` depends on `feature_flags_api_v1`.
+11. `desktop_collector_v1` depends on `screenshots_r2_upload_v1`.
+12. `stripe_billing_v1` depends on `auth_clerk_v1`.
+13. `tokens_purchase_v1` depends on `stripe_billing_v1`.
+14. `stripe_webhooks_v1` depends on `stripe_billing_v1`.
+15. `mentor_public_profile_v1` depends on `trade_journal_core_v1`.
+16. `discipline_score_v1` depends on `strategies_v1` AND `trade_journal_core_v1`.
+17. `feature_flags_api_v1` depends on `auth_clerk_v1`.
+18. `admin_feature_dashboard_v1` depends on `feature_flags_api_v1`.
 
-For all other flags (`supabase_runtime_v1`, `strategies_v1`, `landing_blog_v1`, `landing_i18n_v1`, `landing_pricing_v1`, `rag_docs_index_v1`, `crypto_pairs_support`, `options_trading_support`, `user_avatars`, `two_factor_auth`, `social_login_google`, `social_login_github`, `webhook_integration`, `api_access_v1`, `custom_chart_indicators`, `community_forum`, `live_chat_support`, `trade_replay_v1`, `bulk_import_csv`, `email_notifications`, `sms_notifications`, `affiliate_program`), there are no strict dependencies.
+The direct downstream features of `stripe_billing_v1` are `tokens_purchase_v1` and `stripe_webhooks_v1`. `stripe_billing_v1` controls real paid billing behind the TradeWitness pricing CTA, while `tokens_purchase_v1` controls paid token purchases and `stripe_webhooks_v1` controls Stripe event processing.
+
+Flags with no strict dependencies are `auth_clerk_v1`, `supabase_runtime_v1`, `r2_storage_v1`, `landing_blog_v1`, `landing_i18n_v1`, `landing_pricing_v1`, and `rag_docs_index_v1`.
 
 ## M3 Feature Flag Hooks
 

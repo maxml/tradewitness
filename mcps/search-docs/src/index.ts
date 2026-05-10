@@ -17,6 +17,16 @@ const EMBEDDING_PROVIDER = process.env.EMBEDDING_PROVIDER || 'bge-m3';
 
 const client = new QdrantClient({ url: QDRANT_URL, apiKey: QDRANT_API_KEY });
 
+let bgeEmbedderPromise: Promise<any> | undefined;
+
+async function getBgeEmbedder() {
+  if (!bgeEmbedderPromise) {
+    const { pipeline } = await import('@xenova/transformers');
+    bgeEmbedderPromise = pipeline('feature-extraction', 'Xenova/bge-m3');
+  }
+  return bgeEmbedderPromise;
+}
+
 async function getEmbedding(text: string): Promise<number[]> {
   if (EMBEDDING_PROVIDER === 'openai') {
     const OpenAI = (await import('openai')).default;
@@ -27,9 +37,7 @@ async function getEmbedding(text: string): Promise<number[]> {
     });
     return response.data[0].embedding;
   } else {
-    // bge-m3 via xenova
-    const { pipeline } = await import('@xenova/transformers');
-    const embedder = await pipeline('feature-extraction', 'Xenova/bge-m3');
+    const embedder = await getBgeEmbedder();
     const output = await embedder(text, { pooling: 'mean', normalize: true });
     return Array.from(output.data);
   }
@@ -62,7 +70,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           type: "object",
           properties: {
             query: { type: "string", description: "The search query (e.g. 'stripe_billing_v1 dependencies')" },
-            top_k: { type: "number", description: "Number of top results to return (default is 5).", default: 5 }
+            top_k: { type: "integer", minimum: 1, maximum: 10, description: "Number of top results to return (default is 5).", default: 5 }
           },
           required: ["query"]
         }
@@ -75,6 +83,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     if (request.params.name === "search_project_docs") {
       const { query, top_k = 5 } = request.params.arguments as any;
+      if (typeof query !== 'string' || query.trim().length === 0) {
+        throw new Error("query must be a non-empty string.");
+      }
+      if (!Number.isInteger(top_k) || top_k < 1 || top_k > 10) {
+        throw new Error("top_k must be an integer from 1 to 10.");
+      }
+
       const vector = await getEmbedding(query);
       
       const results = await client.search(COLLECTION_NAME, {
@@ -85,7 +100,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       const formattedResults = results.map((res: any, i) => {
         const p = res.payload;
-        return `Result ${i + 1} (Score: ${res.score.toFixed(4)})\nSource: ${p.source_file}\nType: ${p.type}\nHeadings: ${p.parent_headings?.join(' > ')}\nContent snippet: ${p.summary}`;
+        const excerpt = typeof p.content === 'string' ? p.content : p.summary;
+        return `Result ${i + 1} (Score: ${res.score.toFixed(4)})\nSource: ${p.source_file}\nType: ${p.type}\nHeadings: ${p.parent_headings?.join(' > ')}\nExcerpt:\n${excerpt}`;
       });
 
       return {

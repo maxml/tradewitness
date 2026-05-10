@@ -127,38 +127,46 @@ focused on this codebase's specific gotchas.
 CLI output for the mandatory queries:
 
 **Query 1:** `What database does TradeWitness use and why was it chosen?`
-- *Result 1 (Score: 0.8444)*
+- *Result 1 (Score: 0.8169)*
+  Source: docs/m3-corpus/architecture/auth-flow.md
+  Type: architectur
+  Headings: Clerk Authentication Flow > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 2 (Score: 0.8168)*
   Source: docs/m3-corpus/runbooks/db-migrations.md
   Type: runbook
   Headings: Runbook: Database Migrations > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
-- *Result 2 (Score: 0.8444)*
-  Source: docs/m3-corpus/runbooks/auth-troubleshooting.md
-  Type: runbook
-  Headings: Runbook: Auth Troubleshooting > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
-- *Result 3 (Score: 0.8444)*
-  Source: docs/m3-corpus/architecture/db-schema.md
-  Type: architecture
-  Headings: Drizzle & Supabase Relational Schema > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 3 (Score: 0.8125)*
+  Source: docs/m3-corpus/architecture/r2-storage.md
+  Type: architectur
+  Headings: Cloudflare R2 Object Storage > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
 
 **Query 2:** `Which TradeWitness features depend on stripe_billing_v1?`
-- *Result 1 (Score: 0.8470)*
-  Source: docs/m3-corpus/feature-flags-spec.md
-  Type: specification
-  Headings: Feature Flags Specification > Dependency Graph > M3 Feature Flag Hooks > Contracts and Usage
-- *Result 2 (Score: 0.8327)*
+- *Result 1 (Score: 0.8327)*
   Source: docs/m3-corpus/features/billing-stripe.md
   Type: feature
   Headings: Stripe Billing & Subscriptions > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 2 (Score: 0.7820)*
+  Source: docs/m3-corpus/architecture/db-schema.md
+  Type: architectur
+  Headings: Drizzle & Supabase Relational Schema > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 3 (Score: 0.7798)*
+  Source: docs/m3-corpus/architecture/turborepo.md
+  Type: architectur
+  Headings: Turborepo Monorepo Setup > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
 
 **Query 3:** `What happened in the latest incident involving screenshot upload?`
-- *Result 1 (Score: 0.8523)*
-  Source: docs/m3-corpus/incidents/incident-0010.md
+- *Result 1 (Score: 0.7115)*
+  Source: docs/m3-corpus/feature-flags-spec.md
+  Type: specification
+  Headings: Feature Flags Specification > Dependency Graph > M3 Feature Flag Hooks > Contracts and Usage
+- *Result 2 (Score: 0.7099)*
+  Source: docs/m3-corpus/incidents/incident-002.md
   Type: incident
-  Headings: Incident 0010: Outage Report > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
-- *Result 2 (Score: 0.8523)*
-  Source: docs/m3-corpus/incidents/incident-009.md
-  Type: incident
-  Headings: Incident 009: Outage Report > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+  Headings: Incident 002: Outage Report > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 3 (Score: 0.7068)*
+  Source: docs/m3-corpus/features/billing-stripe.md
+  Type: feature
+  Headings: Stripe Billing & Subscriptions > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
 
 ### MCP Logs (End-to-End Session)
 Transcript of the agent executing the final scenario, showing coordination between the two MCP servers.

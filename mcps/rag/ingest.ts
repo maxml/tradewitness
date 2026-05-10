@@ -20,6 +20,16 @@ const CHUNKS_FILE = path.join(process.cwd(), 'chunks.jsonl');
 
 const client = new QdrantClient({ url: QDRANT_URL, apiKey: QDRANT_API_KEY });
 
+let bgeEmbedderPromise: Promise<any> | undefined;
+
+async function getBgeEmbedder() {
+  if (!bgeEmbedderPromise) {
+    const { pipeline } = await import('@xenova/transformers');
+    bgeEmbedderPromise = pipeline('feature-extraction', 'Xenova/bge-m3');
+  }
+  return bgeEmbedderPromise;
+}
+
 async function getEmbedding(text: string): Promise<number[]> {
   if (EMBEDDING_PROVIDER === 'openai') {
     const OpenAI = (await import('openai')).default;
@@ -30,9 +40,7 @@ async function getEmbedding(text: string): Promise<number[]> {
     });
     return response.data[0].embedding;
   } else {
-    // bge-m3 via xenova
-    const { pipeline } = await import('@xenova/transformers');
-    const embedder = await pipeline('feature-extraction', 'Xenova/bge-m3');
+    const embedder = await getBgeEmbedder();
     const output = await embedder(text, { pooling: 'mean', normalize: true });
     return Array.from(output.data);
   }
@@ -89,8 +97,8 @@ async function main() {
   console.log(`Found ${files.length} markdown files in corpus.`);
 
   const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 500,
-    chunkOverlap: 100,
+    chunkSize: 1800,
+    chunkOverlap: 200,
     separators: ["\n## ", "\n### ", "\n#### ", "\n", " ", ""]
   });
 
