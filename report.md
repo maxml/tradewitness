@@ -163,6 +163,11 @@ CLI output for the mandatory queries:
 ### MCP Logs (End-to-End Session)
 Transcript of the agent executing the final scenario, showing coordination between the two MCP servers.
 
+### MCP Inspector
+Feature Flags MCP was verified in MCP Inspector. The tools list is visible in the screenshot below: `list_features`, `get_feature_info`, `set_feature_state`, and `adjust_traffic_rollout`.
+
+![Feature Flags MCP tools in MCP Inspector](./m3-mcp-inspector-tools.png)
+
 **Agent Prompt:**
 > Find in the TradeWitness documentation what stripe_billing_v1 does and which features depend on it. Then check its current feature flag state. If it is Disabled and all dependencies are not Disabled, move it to Testing and set traffic to 25%. Quote the documentation that explains why this feature exists.
 
