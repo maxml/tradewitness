@@ -17,7 +17,7 @@
     "name": "trade_journal_core_v1",
     "status": "Enabled",
     "traffic_percentage": 100,
-    "depends_on": [],
+    "depends_on": ["auth_clerk_v1", "supabase_runtime_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
@@ -31,20 +31,20 @@
     "name": "strategies_v1",
     "status": "Enabled",
     "traffic_percentage": 100,
-    "depends_on": [],
+    "depends_on": ["trade_journal_core_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "custom_trade_fields_v1",
-    "status": "Testing",
-    "traffic_percentage": 20,
+    "status": "Enabled",
+    "traffic_percentage": 100,
     "depends_on": ["trade_journal_core_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "calendar_analytics_v1",
-    "status": "Enabled",
-    "traffic_percentage": 100,
+    "status": "Testing",
+    "traffic_percentage": 25,
     "depends_on": ["trade_journal_core_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
@@ -57,29 +57,29 @@
   },
   {
     "name": "statistics_summary_v1",
-    "status": "Enabled",
-    "traffic_percentage": 100,
+    "status": "Testing",
+    "traffic_percentage": 25,
     "depends_on": ["trade_journal_core_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "r2_storage_v1",
-    "status": "Enabled",
-    "traffic_percentage": 100,
+    "status": "Testing",
+    "traffic_percentage": 25,
     "depends_on": [],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "screenshots_r2_upload_v1",
-    "status": "Enabled",
-    "traffic_percentage": 100,
-    "depends_on": ["r2_storage_v1", "trade_journal_core_v1"],
+    "status": "Testing",
+    "traffic_percentage": 25,
+    "depends_on": ["trade_journal_core_v1", "r2_storage_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "ai_report_prompt_v1",
-    "status": "Disabled",
-    "traffic_percentage": 0,
+    "status": "Testing",
+    "traffic_percentage": 25,
     "depends_on": ["trade_journal_core_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
@@ -106,15 +106,15 @@
   },
   {
     "name": "landing_i18n_v1",
-    "status": "Testing",
-    "traffic_percentage": 10,
+    "status": "Enabled",
+    "traffic_percentage": 100,
     "depends_on": [],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "landing_pricing_v1",
-    "status": "Enabled",
-    "traffic_percentage": 100,
+    "status": "Testing",
+    "traffic_percentage": 25,
     "depends_on": [],
     "last_modified": "2026-05-10T00:00:00Z"
   },
@@ -148,29 +148,29 @@
   },
   {
     "name": "discipline_score_v1",
-    "status": "Disabled",
-    "traffic_percentage": 0,
-    "depends_on": ["trade_journal_core_v1"],
+    "status": "Testing",
+    "traffic_percentage": 25,
+    "depends_on": ["strategies_v1", "trade_journal_core_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "feature_flags_api_v1",
-    "status": "Enabled",
-    "traffic_percentage": 100,
-    "depends_on": [],
+    "status": "Testing",
+    "traffic_percentage": 25,
+    "depends_on": ["auth_clerk_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "admin_feature_dashboard_v1",
-    "status": "Enabled",
-    "traffic_percentage": 100,
+    "status": "Disabled",
+    "traffic_percentage": 0,
     "depends_on": ["feature_flags_api_v1"],
     "last_modified": "2026-05-10T00:00:00Z"
   },
   {
     "name": "rag_docs_index_v1",
-    "status": "Enabled",
-    "traffic_percentage": 100,
+    "status": "Disabled",
+    "traffic_percentage": 0,
     "depends_on": [],
     "last_modified": "2026-05-10T00:00:00Z"
   }

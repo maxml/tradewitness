@@ -4,6 +4,14 @@ import { FeatureFlag } from "@tradewitness/feature-flags-core";
 
 export const dynamic = 'force-dynamic';
 
+const DEV_FEATURE_FLAGS_API_KEY = "local-m3-change-me";
+
+function getFeatureFlagsApiKey() {
+  if (process.env.FEATURE_FLAGS_API_KEY) return process.env.FEATURE_FLAGS_API_KEY;
+  if (process.env.NODE_ENV !== "production") return DEV_FEATURE_FLAGS_API_KEY;
+  return "";
+}
+
 export default async function AdminFeaturesPage() {
   const user = await currentUser();
   if (!user) {
@@ -11,7 +19,7 @@ export default async function AdminFeaturesPage() {
   }
 
   const primaryEmail = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress;
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()).filter(Boolean) || [];
   
   if (!primaryEmail || !adminEmails.includes(primaryEmail)) {
     return (
@@ -22,8 +30,8 @@ export default async function AdminFeaturesPage() {
     );
   }
 
-  const internalUrl = process.env.APP_INTERNAL_URL || 'http://127.0.0.1:3001';
-  const apiKey = process.env.FEATURE_FLAGS_API_KEY || '';
+  const internalUrl = process.env.APP_INTERNAL_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://127.0.0.1:3001';
+  const apiKey = getFeatureFlagsApiKey();
 
   let flags: FeatureFlag[] = [];
   try {

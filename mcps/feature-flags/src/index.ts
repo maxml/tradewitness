@@ -3,10 +3,11 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import { FeatureFlag } from "@tradewitness/feature-flags-core";
+import type { FeatureFlag, FeatureFlagState } from "@tradewitness/feature-flags-core";
 
-const API_URL = process.env.APP_INTERNAL_URL || "http://127.0.0.1:3001";
-const API_KEY = process.env.FEATURE_FLAGS_API_KEY || "";
+const API_URL = process.env.APP_INTERNAL_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3001";
+const DEV_API_KEY = "local-m3-change-me";
+const VALID_STATES = new Set<FeatureFlagState>(["Disabled", "Testing", "Enabled"]);
 
 const server = new Server({
   name: "feature-flags-mcp",
@@ -17,19 +18,67 @@ const server = new Server({
   }
 });
 
+function getApiKey() {
+  const apiKey = process.env.FEATURE_FLAGS_API_KEY ?? (process.env.NODE_ENV !== "production" ? DEV_API_KEY : "");
+  if (!apiKey) throw new Error("FEATURE_FLAGS_API_KEY is required to call the feature flags API.");
+  return apiKey;
+}
+
+function getFeature(flags: FeatureFlag[], featureName: string) {
+  const flag = flags.find(f => f.name === featureName);
+  if (!flag) throw new Error(`Flag not found: ${featureName}`);
+  return flag;
+}
+
+function getStringArg(args: unknown, key: string) {
+  if (!args || typeof args !== "object" || typeof (args as Record<string, unknown>)[key] !== "string") {
+    throw new Error(`Missing or invalid string argument: ${key}`);
+  }
+  return (args as Record<string, string>)[key];
+}
+
+function getPercentageArg(args: unknown) {
+  if (!args || typeof args !== "object") throw new Error("Missing arguments");
+  const value = (args as Record<string, unknown>).percentage;
+  if (!Number.isInteger(value) || (value as number) < 0 || (value as number) > 100) {
+    throw new Error("percentage must be an integer from 0 to 100.");
+  }
+  return value as number;
+}
+
+function validateStateChange(flags: FeatureFlag[], featureName: string, state: FeatureFlagState) {
+  const flag = getFeature(flags, featureName);
+
+  if (state === "Testing" || state === "Enabled") {
+    for (const depName of flag.depends_on) {
+      const dep = getFeature(flags, depName);
+      if (dep.status === "Disabled") {
+        throw new Error(`Cannot set ${featureName} to ${state} because dependency ${depName} is Disabled.`);
+      }
+    }
+  }
+
+  if (state === "Disabled") {
+    const activeChild = flags.find(child => child.depends_on.includes(featureName) && child.status !== "Disabled");
+    if (activeChild) {
+      throw new Error(`Cannot disable ${featureName} because child ${activeChild.name} is currently ${activeChild.status}.`);
+    }
+  }
+}
+
 async function fetchFlags(): Promise<FeatureFlag[]> {
   const res = await fetch(`${API_URL}/api/feature-flags`, {
-    headers: { "x-api-key": API_KEY },
+    headers: { "x-api-key": getApiKey() },
   });
   if (!res.ok) throw new Error(`API Error: ${await res.text()}`);
   return res.json();
 }
 
-async function patchFlag(name: string, update: { status?: string, traffic_percentage?: number }) {
+async function patchFlag(name: string, update: { status?: FeatureFlagState, traffic_percentage?: number }) {
   const res = await fetch(`${API_URL}/api/feature-flags`, {
     method: "PATCH",
     headers: { 
-      "x-api-key": API_KEY,
+      "x-api-key": getApiKey(),
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ name, ...update })
@@ -43,7 +92,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "list_features",
-        description: "Returns a list of all available feature flags and their current statuses. You MUST call this to discover available flags before attempting to modify them. Do NOT call this if you only need info about a specific flag you already know the name of.",
+        description: [
+          "Returns all feature flags as JSON, including name, status, traffic_percentage, depends_on, and last_modified.",
+          "When to call: use this first when you need to discover available flags or compare several rollout states.",
+          "When NOT to call: do not use it if you already know the exact flag name and only need one flag; use get_feature_info instead.",
+          "Inputs: no arguments.",
+          "Output: JSON array of FeatureFlag objects.",
+          "Example: call list_features before deciding which TradeWitness flag controls mentor public profiles.",
+          "You MUST use exact feature names from this output when calling mutation tools."
+        ].join(" "),
         inputSchema: {
           type: "object",
           properties: {},
@@ -51,7 +108,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get_feature_info",
-        description: "Returns full details for a specific feature flag including its status, traffic percentage, dependencies, and last modified date. You MUST call this before changing a flag's state to check its dependencies. Do NOT call this if you already have the full flag object.",
+        description: [
+          "Returns one feature flag as JSON, including status, traffic_percentage, dependencies, and last_modified.",
+          "When to call: use this before changing a known flag or when answering a question about a specific flag.",
+          "When NOT to call: do not use it for broad discovery; use list_features instead.",
+          "Inputs: { feature_name: string }, where feature_name is an exact flag name such as search_v2.",
+          "Output: one FeatureFlag JSON object.",
+          "Example: get_feature_info({ feature_name: 'mentor_public_profile_v1' }).",
+          "You MUST reject unknown feature names and surface an error instead of guessing."
+        ].join(" "),
         inputSchema: {
           type: "object",
           properties: {
@@ -62,7 +127,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "set_feature_state",
-        description: "Changes the status of a feature flag. Valid statuses are 'Disabled', 'Testing', and 'Enabled'. You MUST ensure that if moving to 'Testing' or 'Enabled', all dependencies are NOT 'Disabled'. The tool will return an error if dependencies are not met.",
+        description: [
+          "Changes a feature flag status and returns the updated FeatureFlag JSON object.",
+          "When to call: use this to move a known flag between Disabled, Testing, and Enabled.",
+          "When NOT to call: do not use this to change rollout percentage; use adjust_traffic_rollout.",
+          "Inputs: { feature_name: string, state: 'Disabled' | 'Testing' | 'Enabled' }.",
+          "Output: the updated FeatureFlag JSON object or an error.",
+          "Example: set_feature_state({ feature_name: 'mentor_public_profile_v1', state: 'Testing' }).",
+          "You MUST reject invalid states, unknown feature names, enabling/testing when dependencies are Disabled, and disabling a parent while active children depend on it."
+        ].join(" "),
         inputSchema: {
           type: "object",
           properties: {
@@ -74,7 +147,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "adjust_traffic_rollout",
-        description: "Sets the traffic percentage (0-100) for a feature flag. You MUST ensure the feature is NOT 'Disabled' if setting traffic > 0. Do NOT use this tool if the feature is currently 'Disabled'.",
+        description: [
+          "Sets a feature flag traffic rollout percentage and returns the updated FeatureFlag JSON object.",
+          "When to call: use this after a flag is in Testing or Enabled and you need to change rollout exposure.",
+          "When NOT to call: do not use this to enable a Disabled flag; use set_feature_state first.",
+          "Inputs: { feature_name: string, percentage: integer }, where percentage is 0 through 100.",
+          "Output: the updated FeatureFlag JSON object or an error.",
+          "Example: adjust_traffic_rollout({ feature_name: 'mentor_public_profile_v1', percentage: 25 }).",
+          "You MUST reject unknown feature names, non-integer percentages, values outside 0..100, and percentage > 0 for Disabled flags."
+        ].join(" "),
         inputSchema: {
           type: "object",
           properties: {
@@ -98,25 +179,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     if (request.params.name === "get_feature_info") {
-      const { feature_name } = request.params.arguments as any;
+      const feature_name = getStringArg(request.params.arguments, "feature_name");
       const flags = await fetchFlags();
-      const flag = flags.find(f => f.name === feature_name);
-      if (!flag) throw new Error(`Flag not found: ${feature_name}`);
+      const flag = getFeature(flags, feature_name);
       return {
         content: [{ type: "text", text: JSON.stringify(flag, null, 2) }]
       };
     }
 
     if (request.params.name === "set_feature_state") {
-      const { feature_name, state } = request.params.arguments as any;
-      const updatedFlag = await patchFlag(feature_name, { status: state });
+      const feature_name = getStringArg(request.params.arguments, "feature_name");
+      const state = getStringArg(request.params.arguments, "state");
+      if (!VALID_STATES.has(state as FeatureFlagState)) {
+        throw new Error("state must be one of Disabled, Testing, or Enabled.");
+      }
+
+      const flags = await fetchFlags();
+      validateStateChange(flags, feature_name, state as FeatureFlagState);
+      const updatedFlag = await patchFlag(feature_name, { status: state as FeatureFlagState });
       return {
         content: [{ type: "text", text: JSON.stringify(updatedFlag, null, 2) }]
       };
     }
 
     if (request.params.name === "adjust_traffic_rollout") {
-      const { feature_name, percentage } = request.params.arguments as any;
+      const feature_name = getStringArg(request.params.arguments, "feature_name");
+      const percentage = getPercentageArg(request.params.arguments);
+      const flags = await fetchFlags();
+      const flag = getFeature(flags, feature_name);
+      if (flag.status === "Disabled" && percentage > 0) {
+        throw new Error(`Cannot set traffic to ${percentage} because ${feature_name} is Disabled.`);
+      }
+
       const updatedFlag = await patchFlag(feature_name, { traffic_percentage: percentage });
       return {
         content: [{ type: "text", text: JSON.stringify(updatedFlag, null, 2) }]
