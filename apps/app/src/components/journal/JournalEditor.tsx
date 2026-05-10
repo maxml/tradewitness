@@ -39,12 +39,12 @@ const MenuBar = ({ editor }: { editor: Editor }) => {
     }
 
     const buttonClass = (isActive: boolean) =>
-        `p-2 rounded hover:bg-zinc-100 transition-colors ${
-            isActive ? "bg-zinc-200 text-zinc-900" : "text-zinc-600"
+        `rounded-md p-2 transition-colors hover:bg-card-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+            isActive ? "bg-card-alt text-foreground" : "text-muted"
         }`;
 
     return (
-        <div className="border border-zinc-200 rounded-lg p-2 mb-4 flex flex-wrap gap-1 bg-white sticky top-0 z-10">
+        <div className="sticky top-0 z-10 mb-4 flex flex-wrap gap-1 rounded-lg border border-border bg-card p-2">
             <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleBold().run()}
@@ -74,7 +74,7 @@ const MenuBar = ({ editor }: { editor: Editor }) => {
                 <Code className="h-4 w-4" />
             </button>
 
-            <div className="w-px h-6 bg-zinc-300 mx-1" />
+            <div className="mx-1 h-6 w-px bg-border" />
 
             <button
                 type="button"
@@ -98,7 +98,7 @@ const MenuBar = ({ editor }: { editor: Editor }) => {
                 <Heading3 className="h-4 w-4" />
             </button>
 
-            <div className="w-px h-6 bg-zinc-300 mx-1" />
+            <div className="mx-1 h-6 w-px bg-border" />
 
             <button
                 type="button"
@@ -122,7 +122,7 @@ const MenuBar = ({ editor }: { editor: Editor }) => {
                 <Quote className="h-4 w-4" />
             </button>
 
-            <div className="w-px h-6 bg-zinc-300 mx-1" />
+            <div className="mx-1 h-6 w-px bg-border" />
 
             <button
                 type="button"
@@ -209,7 +209,7 @@ export function JournalEditor({ date, initialContent }: JournalEditorProps) {
     }
 
     return (
-        <div className="max-w-3xl mx-auto py-8 px-4 bg-background">
+        <div className="mx-auto w-full max-w-3xl">
             <style>{`
                 .tiptap p {
                     font-size: 1rem !important;

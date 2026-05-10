@@ -59,7 +59,7 @@ export function StatsGridPageOne({
     const isMobile = useMediaQuery("(max-width:768px)");
     return (
         <ThemeProvider theme={theme}>
-            <div className="grid grid-rows-10 md:grid-rows-4 grid-cols-1 md:grid-cols-4 gap-6 p-4 md:p-8 bg-background w-full">
+            <div className="grid grid-rows-10 md:grid-rows-4 grid-cols-1 md:grid-cols-4 gap-6 md:gap-12 p-4 md:p-8 bg-background w-full">
                 <div className="max-md:h-[500px] col-span-1 md:col-span-3 row-span-3 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
                     <div className="font-semibold border-b border-border w-full p-4 bg-card-alt/50">
                         <p className="text-sm tracking-tight text-muted uppercase">Equity Curve Summary</p>
