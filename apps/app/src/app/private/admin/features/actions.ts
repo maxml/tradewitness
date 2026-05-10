@@ -5,6 +5,11 @@ import { FeatureFlagState } from "@tradewitness/feature-flags-core";
 import { revalidatePath } from "next/cache";
 
 const getInternalUrl = () => process.env.APP_INTERNAL_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://127.0.0.1:3001';
+const getFeatureFlagsApiKey = () => {
+  if (process.env.FEATURE_FLAGS_API_KEY) return process.env.FEATURE_FLAGS_API_KEY;
+  if (process.env.NODE_ENV !== "production") return "local-m3-change-me";
+  return "";
+};
 
 export async function updateFeatureFlag(name: string, updates: { status?: FeatureFlagState, traffic_percentage?: number }) {
   // Authorization check
@@ -20,7 +25,10 @@ export async function updateFeatureFlag(name: string, updates: { status?: Featur
     return { success: false, error: "Forbidden: Admin access required." };
   }
 
-  const apiKey = process.env.FEATURE_FLAGS_API_KEY || '';
+  const apiKey = getFeatureFlagsApiKey();
+  if (!apiKey) {
+    return { success: false, error: "FEATURE_FLAGS_API_KEY is required." };
+  }
   const internalUrl = getInternalUrl();
 
   try {

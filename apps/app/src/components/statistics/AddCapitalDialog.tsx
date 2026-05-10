@@ -11,7 +11,7 @@ import {
     DialogDescription,
 } from "../ui/dialog";
 import { Input } from "../ui/input";
-import { CustomButton } from "../CustomButton";
+import { Button } from "../ui/button";
 import { CirclePlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { addCapitalFormSchema } from "@/zodSchema/schema";
@@ -23,7 +23,6 @@ import { useAppDispatch } from "@/redux/store";
 import { changeLocalCapital } from "@/redux/slices/statisticsSlice";
 
 export default function AddCapitalDialog() {
-    const [capital, setCapital] = useState("");
     const [open, setOpen] = useState(false);
 
     const dispatch = useAppDispatch();
@@ -73,25 +72,14 @@ export default function AddCapitalDialog() {
                                 {errors.capital.message}
                             </span>
                         )}
-                        <Input
-                            id="capital"
-                            value={capital}
-                            {...register("capital")}
-                            onChange={(e) => setCapital(e.target.value)}
-                            className="col-span-3"
-                            placeholder="Enter capital"
-                        />
+                        <Input id="capital" {...register("capital")} className="col-span-3" placeholder="Enter capital" />
                     </div>
                     <DialogFooter>
-                        <CustomButton isBlack type="submit" className="w-full">
+                        <Button type="submit" className="w-full">
                             Save changes
-                        </CustomButton>
+                        </Button>
                     </DialogFooter>
                 </form>
-            </DialogContent>
-        </Dialog>
-    );
-}
             </DialogContent>
         </Dialog>
     );

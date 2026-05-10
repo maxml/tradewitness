@@ -97,7 +97,7 @@ export default function FeatureDashboardClient({ initialFlags }: Props) {
       </div>
 
       {filteredFlags.length === 0 ? (
-        <div className="p-12 text-center bg-card border border-border rounded-lg shadow-sm">
+        <div className="p-12 text-center bg-card border border-border rounded-lg">
           <h3 className="text-lg font-medium text-foreground">No feature flags found</h3>
           <p className="text-muted mt-1">Try adjusting your search or filters.</p>
         </div>
@@ -133,7 +133,7 @@ export default function FeatureDashboardClient({ initialFlags }: Props) {
                       checked={isChecked}
                       onCheckedChange={(checked) => handleStatusChange(flag.name, checked)}
                       disabled={isLoading}
-                      className={`w-[42px] h-[24px] rounded-full relative outline-none cursor-pointer border border-transparent shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors ${isChecked ? 'bg-primary' : 'bg-zinc-700'}`}
+                      className={`w-[42px] h-[24px] rounded-full relative outline-none cursor-pointer border border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors ${isChecked ? 'bg-primary' : 'bg-zinc-700'}`}
                       aria-label={`Toggle feature ${flag.name}`}
                     >
                       <Switch.Thumb className={`block w-[18px] h-[18px] bg-white rounded-full transition-transform duration-100 translate-x-0.5 will-change-transform ${isChecked ? 'translate-x-[20px]' : ''}`} />
@@ -159,7 +159,7 @@ export default function FeatureDashboardClient({ initialFlags }: Props) {
                       <Slider.Track className={`bg-zinc-800 relative grow rounded-full h-1.5 ${isDisabled ? 'opacity-50' : ''}`}>
                         <Slider.Range className="absolute bg-primary rounded-full h-full" />
                       </Slider.Track>
-                      <Slider.Thumb className={`block w-4 h-4 bg-white shadow-[0_2px_10px] shadow-black/50 rounded-[10px] hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-ring ${isDisabled ? 'hidden' : ''}`} />
+                      <Slider.Thumb className={`block w-4 h-4 bg-white border border-border rounded-full hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-ring ${isDisabled ? 'hidden' : ''}`} />
                     </Slider.Root>
                   </div>
 

@@ -67,7 +67,7 @@ export default function Page() {
                         <Switch.Root
                             checked={isSwitchChartsActive}
                             onCheckedChange={setIsSwitchChartsActive}
-                            className="w-[42px] h-[24px] bg-zinc-700 rounded-full relative outline-none cursor-pointer border border-transparent shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=checked]:bg-primary transition-colors"
+                            className="w-[42px] h-[24px] bg-zinc-700 rounded-full relative outline-none cursor-pointer border border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=checked]:bg-primary transition-colors"
                             aria-label="Toggle between Summary and Details view"
                         >
                             <Switch.Thumb className="block w-[18px] h-[18px] bg-white rounded-full transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[20px]" />
