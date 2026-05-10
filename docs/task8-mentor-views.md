@@ -9,6 +9,16 @@ TradeWitness is designed not just as a personal journal, but as a mentorship CRM
 - Fetch and display the trader's statistics and anonymized trade history (e.g., hiding exact dollar amounts if configured, showing only percentages/R-multiples).
 - Implement the logic for the "Discipline Score" (a proprietary metric based on adherence to strategy rules).
 
+## M3 Feature Flag Hook
+
+Task 10.1 must document and seed these flags for this work:
+
+- `mentor_public_profile_v1` - public mentor profile route.
+- `discipline_score_v1` - score calculation and display.
+
+`discipline_score_v1` depends on strategy and journal data, so the feature flag
+spec must describe that dependency for MCP validation and RAG retrieval.
+
 ## Implementation Steps
 1. **Schema Update:** Update Drizzle schema to include `ProfileTable` with `username` (unique), `isPublic` (boolean), and `hideDollarAmounts` (boolean). Run migrations.
 2. **Public Route:** Create `apps/landing/src/app/u/[username]/page.tsx` (using Supabase Client) OR `apps/app/src/app/u/[username]/page.tsx` (using Drizzle).
