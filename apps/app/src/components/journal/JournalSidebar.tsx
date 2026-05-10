@@ -68,9 +68,9 @@ export function JournalSidebar({ dates }: JournalSidebarProps) {
     };
 
     return (
-        <div className="w-64 border-r h-full bg-zinc-50/50 flex flex-col">
+        <div className="w-64 border-r border-border h-full bg-background flex flex-col">
             <div className="flex-1 p-4 overflow-y-auto">
-                <div className="font-semibold text-sm text-zinc-500 mb-4 px-2">
+                <div className="font-semibold text-sm text-muted mb-4 px-2 tracking-wide uppercase">
                     Journal Entries
                 </div>
                 <div className="space-y-1">
@@ -78,11 +78,11 @@ export function JournalSidebar({ dates }: JournalSidebarProps) {
                         <div key={year}>
                             <button
                                 onClick={() => toggleYear(year)}
-                                className="flex items-center w-full px-2 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md transition-colors"
+                                className="flex items-center w-full px-2 py-2 text-sm font-medium text-foreground hover:bg-card-alt rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                                 <ChevronRight
                                     className={cn(
-                                        "h-4 w-4 mr-1 text-zinc-400 transition-transform",
+                                        "h-4 w-4 mr-2 text-muted transition-transform",
                                         expandedYears.includes(year) && "rotate-90"
                                     )}
                                 />
@@ -90,18 +90,18 @@ export function JournalSidebar({ dates }: JournalSidebarProps) {
                             </button>
 
                             {expandedYears.includes(year) && (
-                                <div className="ml-4 mt-1 space-y-1 border-l border-zinc-200 pl-2">
+                                <div className="ml-4 mt-1 space-y-1 border-l border-border pl-2">
                                     {Object.keys(tree[year]).map((month) => {
                                         const monthKey = `${year}-${month}`;
                                         return (
                                             <div key={monthKey}>
                                                 <button
                                                     onClick={() => toggleMonth(monthKey)}
-                                                    className="flex items-center w-full px-2 py-1.5 text-sm text-zinc-600 hover:bg-zinc-100 rounded-md transition-colors"
+                                                    className="flex items-center w-full px-2 py-1.5 text-sm text-muted hover:text-foreground hover:bg-card-alt rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                                 >
                                                     <ChevronRight
                                                         className={cn(
-                                                            "h-3.5 w-3.5 mr-1 text-zinc-400 transition-transform",
+                                                            "h-3.5 w-3.5 mr-2 text-muted transition-transform",
                                                             expandedMonths.includes(monthKey) && "rotate-90"
                                                         )}
                                                     />
@@ -109,7 +109,7 @@ export function JournalSidebar({ dates }: JournalSidebarProps) {
                                                 </button>
 
                                                 {expandedMonths.includes(monthKey) && (
-                                                    <div className="ml-4 mt-1 space-y-0.5 border-l border-zinc-200 pl-2">
+                                                    <div className="ml-4 mt-1 space-y-0.5 border-l border-border pl-2">
                                                         {tree[year][month].map((date) => {
                                                             const d = dayjs(date);
                                                             const isActive = pathname === `/private/journal/${d.format("YYYY/MM/DD")}`;
@@ -118,10 +118,10 @@ export function JournalSidebar({ dates }: JournalSidebarProps) {
                                                                     key={date}
                                                                     href={`/private/journal/${d.format("YYYY/MM/DD")}`}
                                                                     className={cn(
-                                                                        "flex items-center w-full px-2 py-1.5 text-sm rounded-md transition-colors",
+                                                                        "flex items-center w-full px-2 py-1.5 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                                                         isActive
-                                                                            ? "bg-orange-100 text-orange-600 font-medium"
-                                                                            : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+                                                                            ? "bg-primary/10 text-primary font-medium border border-primary/20"
+                                                                            : "text-muted hover:bg-card-alt hover:text-foreground border border-transparent"
                                                                     )}
                                                                 >
                                                                     <FileText className="h-3.5 w-3.5 mr-2 opacity-70" />
@@ -139,14 +139,15 @@ export function JournalSidebar({ dates }: JournalSidebarProps) {
                         </div>
                     ))}
                     {sortedYears.length === 0 && (
-                        <div className="text-sm text-zinc-400 px-2 py-4 text-center">
+                        <div className="text-sm text-muted px-2 py-8 text-center flex flex-col items-center">
+                            <FileText className="h-8 w-8 mb-2 opacity-20" />
                             No entries yet
                         </div>
                     )}
                 </div>
             </div>
             
-            <div className="p-4 border-t border-zinc-200">
+            <div className="p-4 border-t border-border bg-card">
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
                         <Button
@@ -157,7 +158,7 @@ export function JournalSidebar({ dates }: JournalSidebarProps) {
                             Select day
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 border-border bg-card shadow-none" align="start">
                         <Calendar
                             mode="single"
                             onSelect={handleDateSelect}

@@ -10,25 +10,14 @@ import {
 } from "@/features/statistics/getDataForSummary";
 import { useAppSelector } from "@/redux/store";
 import { getCapital } from "@/server/actions/user";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import * as Switch from "@radix-ui/react-switch";
 
 export default function Page() {
     const [start, setStart] = useState<string | undefined>();
     const [end, setEnd] = useState<string | undefined>();
-    const buttonRef = useRef<HTMLDivElement | null>(null);
 
     const [isSwitchChartsActive, setIsSwitchChartsActive] = useState(false);
-
-    const handleSwitch = () => {
-        if (buttonRef.current && !isSwitchChartsActive) {
-            buttonRef.current.style.boxShadow =
-                "0 0 0 1px #70451a3d, 0 1px 2px #70451a0d, 2px 3px 5px #70451a29, 4px 6px 5px #70451a14, 8px 12px 8px #70451a14,8px 0 0.5px #70451a33 inset, 20px 20px 25px 25px #70451a33 inset";
-        } else if (buttonRef.current && isSwitchChartsActive) {
-            buttonRef.current.style.boxShadow =
-                "0 0 0 1px #70451a3d, 0 1px 2px #70451a0d, 2px 3px 5px #70451a29, 4px 6px 5px #70451a14, 8px 12px 8px #70451a14,8px 0 0.5px #70451a33 inset, 10px 0 4px -6px #70451a33 inset";
-        }
-        setIsSwitchChartsActive((prev) => !prev);
-    };
 
     const trades = useAppSelector((state) => state.tradeRecords.listOfTrades);
     const filteredTrades = useAppSelector(
@@ -70,37 +59,39 @@ export default function Page() {
     );
 
     return (
-        <div className="md:h-full">
-            <div className="flex items-center justify-between pt-2 md:px-4">
-                <div className="flex items-center gap-4">
-                    <p className="max-md:text-[.7rem]">Details</p>
-
-                    <div
-                        ref={buttonRef}
-                        onClick={handleSwitch}
-                        className={`${
-                            isSwitchChartsActive
-                                ? "switch-button active"
-                                : "switch-button"
-                        }`}
-                    />
-                    <p className="max-md:text-[.7rem]">Summary</p>
+        <div className="md:h-full bg-background text-foreground flex flex-col">
+            <div className="flex items-center justify-between py-4 md:px-8 border-b border-border bg-card">
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3">
+                        <span className={`text-sm font-medium transition-colors ${!isSwitchChartsActive ? 'text-foreground' : 'text-muted'}`}>Summary</span>
+                        <Switch.Root
+                            checked={isSwitchChartsActive}
+                            onCheckedChange={setIsSwitchChartsActive}
+                            className="w-[42px] h-[24px] bg-zinc-700 rounded-full relative outline-none cursor-pointer border border-transparent shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=checked]:bg-primary transition-colors"
+                            aria-label="Toggle between Summary and Details view"
+                        >
+                            <Switch.Thumb className="block w-[18px] h-[18px] bg-white rounded-full transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[20px]" />
+                        </Switch.Root>
+                        <span className={`text-sm font-medium transition-colors ${isSwitchChartsActive ? 'text-foreground' : 'text-muted'}`}>Details</span>
+                    </div>
                 </div>
 
                 <AddCapitalDialog />
             </div>
-            {isSwitchChartsActive ? (
-                <StatsGridPageTwo
-                    start={startValueToUse}
-                    end={end}
-                    oterData={otherDataPageTwo}
-                />
-            ) : (
-                <StatsGridPageOne
-                    tradingData={tradingData}
-                    otherData={otherData}
-                />
-            )}
+            <div className="flex-1 overflow-auto">
+                {isSwitchChartsActive ? (
+                    <StatsGridPageTwo
+                        start={startValueToUse}
+                        end={end}
+                        oterData={otherDataPageTwo}
+                    />
+                ) : (
+                    <StatsGridPageOne
+                        tradingData={tradingData}
+                        otherData={otherData}
+                    />
+                )}
+            </div>
         </div>
     );
 }

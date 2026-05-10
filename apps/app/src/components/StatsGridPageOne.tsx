@@ -59,16 +59,17 @@ export function StatsGridPageOne({
     const isMobile = useMediaQuery("(max-width:768px)");
     return (
         <ThemeProvider theme={theme}>
-            <div className="grid grid-rows-10 md:grid-rows-4 grid-cols-1 md:grid-cols-4 gap-4 max-md:py-4 md:p-4 md:h-[78vh] 2xl:h-[80vh] bg-transparent rounded-xl w-full">
-                <div className="max-md:h-[500px] col-span-1 md:col-span-3 row-span-3 bg-white rounded-lg border border-gray-200 flex flex-col items-center justify-start shadow-md">
-                    <div className="font-semibold border-[0.5px] border-gray-200 w-full p-2">
-                        <p>Summary:</p>
+            <div className="grid grid-rows-10 md:grid-rows-4 grid-cols-1 md:grid-cols-4 gap-6 p-4 md:p-8 bg-background w-full">
+                <div className="max-md:h-[500px] col-span-1 md:col-span-3 row-span-3 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
+                    <div className="font-semibold border-b border-border w-full p-4 bg-card-alt/50">
+                        <p className="text-sm tracking-tight text-muted uppercase">Equity Curve Summary</p>
                     </div>
                     {/* Box to disable interactions with chart on mobile devices */}
                     <Box
                         sx={{
                             width: "100%",
                             height: "100%",
+                            p: 2,
                             position: "relative",
                             "&::after": isMobile
                                 ? {
@@ -104,7 +105,7 @@ export function StatsGridPageOne({
                                     colorMap: {
                                         type: "piecewise",
                                         thresholds: [0],
-                                        colors: ["var(--sell)", "var(--buy)"],
+                                        colors: ["hsl(var(--destructive))", "hsl(var(--success))"],
                                     },
                                 },
                             ]}
@@ -124,15 +125,25 @@ export function StatsGridPageOne({
                             grid={{ horizontal: true }}
                             sx={{
                                 "& .MuiAreaElement-series-capital": {
-                                    opacity: 0.3,
+                                    opacity: 0.1,
+                                },
+                                "& .MuiChartsGrid-line": {
+                                    stroke: "hsl(var(--border) / 0.5)",
+                                },
+                                "& .MuiChartsAxis-tick, & .MuiChartsAxis-line": {
+                                    stroke: "hsl(var(--muted))",
+                                },
+                                "& .MuiChartsAxis-tickLabel": {
+                                    fill: "hsl(var(--muted))",
+                                    fontFamily: "var(--font-geist-mono)",
                                 },
                             }}
                         />
                     </Box>
                 </div>
-                <div className="col-span-1 row-span-1 bg-white rounded-lg border border-gray-200 shadow-md flex flex-col items-center justify-start ">
-                    <div className="font-semibold border-[0.5px] border-gray-200 w-full p-2">
-                        <p>Succesful positions / All positions:</p>
+                <div className="col-span-1 row-span-1 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
+                    <div className="font-semibold border-b border-border w-full p-3 bg-card-alt/50 text-center">
+                        <p className="text-[10px] tracking-widest text-muted uppercase">Win Rate (Total)</p>
                     </div>
                     <Gauge
                         value={otherData.chartOne.succesfullPositions ?? 0}
@@ -140,12 +151,18 @@ export function StatsGridPageOne({
                         endAngle={90}
                         cornerRadius="50%"
                         sx={{
+                            p: 2,
                             [`& .${gaugeClasses.valueText}`]: {
-                                fontSize: 16,
-                                transform: "translate(0px, -30px)",
+                                fontSize: 14,
+                                transform: "translate(0px, -20px)",
+                                fill: "hsl(var(--foreground))",
+                                fontFamily: "var(--font-geist-mono)",
                             },
                             [`& .${gaugeClasses.valueArc}`]: {
-                                fill: "var(--customOrange)",
+                                fill: "hsl(var(--accent))",
+                            },
+                            [`& .${gaugeClasses.referenceArc}`]: {
+                                fill: "hsl(var(--border))",
                             },
                         }}
                         text={({ value }) =>
@@ -155,9 +172,9 @@ export function StatsGridPageOne({
                         }
                     />
                 </div>
-                <div className="col-span-1 row-span-1 bg-white rounded-lg border border-gray-200 flex flex-col items-center justify-start shadow-md">
-                    <div className="font-semibold border-[0.5px] border-gray-200 w-full p-2">
-                        <p>Succesful Buy positions / All Buy positions:</p>
+                <div className="col-span-1 row-span-1 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
+                    <div className="font-semibold border-b border-border w-full p-3 bg-card-alt/50 text-center">
+                        <p className="text-[10px] tracking-widest text-muted uppercase">Win Rate (Buy)</p>
                     </div>
                     <Gauge
                         value={otherData.chartTwo.succesfullBuyPositions ?? 0}
@@ -165,12 +182,18 @@ export function StatsGridPageOne({
                         endAngle={90}
                         cornerRadius="50%"
                         sx={{
+                            p: 2,
                             [`& .${gaugeClasses.valueText}`]: {
-                                fontSize: 16,
-                                transform: "translate(0px, -30px)",
+                                fontSize: 14,
+                                transform: "translate(0px, -20px)",
+                                fill: "hsl(var(--foreground))",
+                                fontFamily: "var(--font-geist-mono)",
                             },
                             [`& .${gaugeClasses.valueArc}`]: {
-                                fill: "var(--customBlue)",
+                                fill: "hsl(var(--primary))",
+                            },
+                            [`& .${gaugeClasses.referenceArc}`]: {
+                                fill: "hsl(var(--border))",
                             },
                         }}
                         text={({ value }) =>
@@ -181,9 +204,9 @@ export function StatsGridPageOne({
                     />
                 </div>
 
-                <div className="col-span-1 row-span-1 bg-white rounded-lg border border-gray-200 flex flex-col items-center justify-start relative shadow-md">
-                    <div className="font-semibold border-[0.5px] border-gray-200 w-full p-2">
-                        <p>Succesful Sell positions / All Sell positions:</p>
+                <div className="col-span-1 row-span-1 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
+                    <div className="font-semibold border-b border-border w-full p-3 bg-card-alt/50 text-center">
+                        <p className="text-[10px] tracking-widest text-muted uppercase">Win Rate (Sell)</p>
                     </div>
                     <Gauge
                         value={
@@ -193,12 +216,18 @@ export function StatsGridPageOne({
                         endAngle={90}
                         cornerRadius="50%"
                         sx={{
+                            p: 2,
                             [`& .${gaugeClasses.valueText}`]: {
-                                fontSize: 16,
-                                transform: "translate(0px, -30px)",
+                                fontSize: 14,
+                                transform: "translate(0px, -20px)",
+                                fill: "hsl(var(--foreground))",
+                                fontFamily: "var(--font-geist-mono)",
                             },
                             [`& .${gaugeClasses.valueArc}`]: {
-                                fill: "var(--customYellow)",
+                                fill: "hsl(var(--success))",
+                            },
+                            [`& .${gaugeClasses.referenceArc}`]: {
+                                fill: "hsl(var(--border))",
                             },
                         }}
                         text={({ value }) =>
@@ -208,15 +237,16 @@ export function StatsGridPageOne({
                         }
                     />
                 </div>
-                <div className="col-span-1 row-span-1 bg-white rounded-lg border border-gray-200 flex flex-col items-center justify-start shadow-md">
-                    <div className="font-semibold border-[0.5px] border-gray-200 w-full p-2">
-                        <p>Succesfull positions All / Avg. per month::</p>
+                <div className="col-span-1 row-span-1 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
+                    <div className="font-semibold border-b border-border w-full p-3 bg-card-alt/50 text-center">
+                        <p className="text-[10px] tracking-widest text-muted uppercase">Monthly Accuracy (Win)</p>
                     </div>
                     {/* Box to disable interactions with chart on mobile devices */}
                     <Box
                         sx={{
                             width: "100%",
                             height: "100%",
+                            p: 1,
                             position: "relative",
 
                             "&::after": isMobile
@@ -234,12 +264,11 @@ export function StatsGridPageOne({
                                 : {},
                         }}>
                         <BarChart
-                            colors={["var(--customYellow), var(--sell)"]}
                             xAxis={[
                                 {
                                     scaleType: "band",
                                     data: ["All", "Avg."],
-                                    categoryGapRatio: 0.7,
+                                    categoryGapRatio: 0.6,
                                 } as ExtendedChartsXAxisProps,
                             ]}
                             series={[
@@ -250,30 +279,41 @@ export function StatsGridPageOne({
                                         otherData.chartFour
                                             .averageBuyPositionsPerMonth ?? 0,
                                     ],
-                                    color: "var(--buy)",
+                                    color: "hsl(var(--success))",
                                     valueFormatter: (value) =>
                                         `${value} positions`,
                                 },
                             ]}
-                            borderRadius={5}
+                            borderRadius={4}
                             margin={{
-                                top: 25,
-                                bottom: 25,
-                                left: 60,
-                                right: 40,
+                                top: 20,
+                                bottom: 20,
+                                left: 45,
+                                right: 20,
+                            }}
+                            sx={{
+                                "& .MuiChartsAxis-tickLabel": {
+                                    fill: "hsl(var(--muted))",
+                                    fontSize: 10,
+                                    fontFamily: "var(--font-geist-mono)",
+                                },
+                                "& .MuiChartsAxis-line": {
+                                    stroke: "hsl(var(--border))",
+                                }
                             }}
                         />
                     </Box>
                 </div>
-                <div className="col-span-1 row-span-1 bg-white rounded-lg border border-gray-200 flex flex-col items-center justify-start shadow-md">
-                    <div className="font-semibold border-[0.5px] border-gray-200 w-full p-2">
-                        <p>Lost positions All / Avg. per month:</p>
+                <div className="col-span-1 row-span-1 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
+                    <div className="font-semibold border-b border-border w-full p-3 bg-card-alt/50 text-center">
+                        <p className="text-[10px] tracking-widest text-muted uppercase">Monthly Accuracy (Loss)</p>
                     </div>
                     {/* Box to disable interactions with chart on mobile devices */}
                     <Box
                         sx={{
                             width: "100%",
                             height: "100%",
+                            p: 1,
                             position: "relative",
 
                             "&::after": isMobile
@@ -291,12 +331,11 @@ export function StatsGridPageOne({
                                 : {},
                         }}>
                         <BarChart
-                            colors={["var(--customYellow), var(--sell)"]}
                             xAxis={[
                                 {
                                     scaleType: "band",
                                     data: ["All", "Avg."],
-                                    categoryGapRatio: 0.7,
+                                    categoryGapRatio: 0.6,
                                 } as ExtendedChartsXAxisProps,
                             ]}
                             series={[
@@ -307,30 +346,41 @@ export function StatsGridPageOne({
                                         otherData.chartFive
                                             .averageSellPositionsPerMonth ?? 0,
                                     ],
-                                    color: "var(--sell)",
+                                    color: "hsl(var(--destructive))",
                                     valueFormatter: (value) =>
                                         `${value} positions`,
                                 },
                             ]}
-                            borderRadius={5}
+                            borderRadius={4}
                             margin={{
-                                top: 25,
-                                bottom: 25,
-                                left: 60,
-                                right: 40,
+                                top: 20,
+                                bottom: 20,
+                                left: 45,
+                                right: 20,
+                            }}
+                            sx={{
+                                "& .MuiChartsAxis-tickLabel": {
+                                    fill: "hsl(var(--muted))",
+                                    fontSize: 10,
+                                    fontFamily: "var(--font-geist-mono)",
+                                },
+                                "& .MuiChartsAxis-line": {
+                                    stroke: "hsl(var(--border))",
+                                }
                             }}
                         />
                     </Box>
                 </div>
-                <div className="col-span-1 row-span-1 bg-white rounded-lg border border-gray-200 flex flex-col items-center justify-start shadow-md">
-                    <div className="font-semibold border-[0.5px] border-gray-200 w-full p-2">
-                        <p>Avarege time in position:</p>
+                <div className="col-span-1 row-span-1 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
+                    <div className="font-semibold border-b border-border w-full p-3 bg-card-alt/50 text-center">
+                        <p className="text-[10px] tracking-widest text-muted uppercase">Avg. Time in Position</p>
                     </div>
                     {/* Box to disable interactions with chart on mobile devices */}
                     <Box
                         sx={{
                             width: "100%",
                             height: "100%",
+                            p: 1,
                             position: "relative",
 
                             "&::after": isMobile
@@ -348,12 +398,11 @@ export function StatsGridPageOne({
                                 : {},
                         }}>
                         <BarChart
-                            colors={["var(--customYellow), var(--sell)"]}
                             xAxis={[
                                 {
                                     scaleType: "band",
                                     data: ["Buy", "Sell"],
-                                    categoryGapRatio: 0.7,
+                                    categoryGapRatio: 0.6,
                                 } as ExtendedChartsXAxisProps,
                             ]}
                             series={[
@@ -364,29 +413,40 @@ export function StatsGridPageOne({
                                         otherData.chartSix
                                             .averageTimeInSellPosition ?? 0,
                                     ],
-                                    color: "var(--customBlue)",
+                                    color: "hsl(var(--primary))",
                                     valueFormatter: (value) => `${value} hours`,
                                 },
                             ]}
-                            borderRadius={5}
+                            borderRadius={4}
                             margin={{
-                                top: 25,
-                                bottom: 25,
-                                left: 60,
-                                right: 40,
+                                top: 20,
+                                bottom: 20,
+                                left: 45,
+                                right: 20,
+                            }}
+                            sx={{
+                                "& .MuiChartsAxis-tickLabel": {
+                                    fill: "hsl(var(--muted))",
+                                    fontSize: 10,
+                                    fontFamily: "var(--font-geist-mono)",
+                                },
+                                "& .MuiChartsAxis-line": {
+                                    stroke: "hsl(var(--border))",
+                                }
                             }}
                         />
                     </Box>
                 </div>
-                <div className="col-span-1 row-span-1 bg-white rounded-lg border border-gray-200 flex flex-col items-center justify-start shadow-md">
-                    <div className="font-semibold border-[0.5px] border-gray-200 w-full p-2">
-                        <p>Max seq. of win / loss transactions</p>
+                <div className="col-span-1 row-span-1 bg-card rounded-lg border border-border flex flex-col items-center justify-start overflow-hidden">
+                    <div className="font-semibold border-b border-border w-full p-3 bg-card-alt/50 text-center">
+                        <p className="text-[10px] tracking-widest text-muted uppercase">Max Sequence (Wins/Loss)</p>
                     </div>
                     {/* Box to disable interactions with chart on mobile devices */}
                     <Box
                         sx={{
                             width: "100%",
                             height: "100%",
+                            p: 1,
                             position: "relative",
 
                             "&::after": isMobile
@@ -404,12 +464,11 @@ export function StatsGridPageOne({
                                 : {},
                         }}>
                         <BarChart
-                            colors={["var(--customYellow), var(--sell)"]}
                             xAxis={[
                                 {
                                     scaleType: "band",
-                                    data: ["Buy", "Sell"],
-                                    categoryGapRatio: 0.7,
+                                    data: ["Win", "Loss"],
+                                    categoryGapRatio: 0.6,
                                 } as ExtendedChartsXAxisProps,
                             ]}
                             series={[
@@ -419,17 +478,27 @@ export function StatsGridPageOne({
                                             .sequenceProfitable ?? 0,
                                         otherData.chartSeven.sequenceLost ?? 0,
                                     ],
-                                    color: "var(--customOrange)",
+                                    color: "hsl(var(--accent))",
                                     valueFormatter: (value) =>
                                         `${value} in a row`,
                                 },
                             ]}
-                            borderRadius={5}
+                            borderRadius={4}
                             margin={{
-                                top: 25,
-                                bottom: 25,
-                                left: 60,
-                                right: 40,
+                                top: 20,
+                                bottom: 20,
+                                left: 45,
+                                right: 20,
+                            }}
+                            sx={{
+                                "& .MuiChartsAxis-tickLabel": {
+                                    fill: "hsl(var(--muted))",
+                                    fontSize: 10,
+                                    fontFamily: "var(--font-geist-mono)",
+                                },
+                                "& .MuiChartsAxis-line": {
+                                    stroke: "hsl(var(--border))",
+                                }
                             }}
                         />
                     </Box>

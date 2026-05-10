@@ -159,7 +159,7 @@ export function JournalEditor({ date, initialContent }: JournalEditorProps) {
         immediatelyRender: false,
         editorProps: {
             attributes: {
-                class: "prose prose-zinc prose-base max-w-none focus:outline-none min-h-[calc(100vh-300px)] text-[16px] [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
+                class: "prose prose-zinc dark:prose-invert prose-base max-w-none focus:outline-none min-h-[calc(100vh-300px)] text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
             },
             
         },
@@ -209,15 +209,15 @@ export function JournalEditor({ date, initialContent }: JournalEditorProps) {
     }
 
     return (
-        <div className="max-w-3xl mx-auto py-8 px-4">
+        <div className="max-w-3xl mx-auto py-8 px-4 bg-background">
             <style>{`
                 .tiptap p {
-                    font-size: 1.1rem !important;
+                    font-size: 1rem !important;
                     line-height: 1.6;
                 }
             `}</style>
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-zinc-800">
+                <h1 className="text-3xl font-bold text-foreground">
                     {dayjs(date).format("dddd, MMMM D, YYYY")}
                 </h1>
                 <div className="flex items-center gap-2">
