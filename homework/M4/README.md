@@ -11,7 +11,7 @@ Route mapping: the original homework asks for `/admin/featuredashboard` in `pros
 
 | # | Page | Route | Visible | Status |
 |---|---|---|---|---|
-| 16 | **Admin: Feature Dashboard** | `/private/admin/features` | admin | [ ] Pending |
+| 16 | **Admin: Feature Dashboard** | `/private/admin/features` | admin | [x] Done |
 | 1 | Trade Journal | `/private/journal` | auth | [ ] Pending |
 | 2 | Statistics | `/private/statistics` | auth | [ ] Pending |
 

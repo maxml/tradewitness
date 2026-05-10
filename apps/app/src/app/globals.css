@@ -305,6 +305,55 @@ mark::after {
 .custom-button {
     @apply px-2 md:px-4 py-2 rounded-md border border-zinc-200 md:hover:bg-neutral-100 shadow-sm;
 }
+ames bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* End of Loading Section */
+
+/* Calendar Section */
+.calendar-banner-shadow {
+    box-shadow: var(--shadow-color) 0px 0px 0.4px 0.4px, rgba(30, 45, 82, 0.2) 0.4px 0.4px 0.4px 0px;
+}
+
+/* End of Calendar Section */
+
+/* Mobile navigation */
+
+.mobile-nav-link {
+    /* padding: 18px; */
+    margin: 24px 18px;
+}
+
+/* End of Mobile navigation */
+
+.test {
+    background-image: url("/nav/test-2.png");
+}
+
+.main-text {
+    @apply bg-gradient-to-br from-zinc-800 via-zinc-600 to-zinc-950 font-bold text-transparent bg-clip-text;
+}
+
+.flex-center {
+    @apply flex items-center justify-center;
+}
+
+.nav-link {
+    @apply hover:bg-darkPrimary py-1 lg:py-3 px-2 lg:px-5 rounded-md cursor-pointer;
+}
+
+.custom-button {
+    @apply px-2 md:px-4 py-2 rounded-md border border-zinc-200 md:hover:bg-neutral-100 shadow-sm;
+}
 
 @layer base {
     :root {

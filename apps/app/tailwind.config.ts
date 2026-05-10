@@ -11,9 +11,22 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				background: 'var(--background)',
-				foreground: 'var(--foreground)',
-				primary: 'var(--primary)',
+				background: 'hsl(var(--background))',
+				foreground: 'hsl(var(--foreground))',
+				card: 'hsl(var(--card))',
+				'card-alt': 'hsl(var(--card-alt))',
+				primary: {
+					DEFAULT: 'hsl(var(--primary))',
+					foreground: 'hsl(var(--primary-fg))'
+				},
+				muted: 'hsl(var(--muted))',
+				accent: 'hsl(var(--accent))',
+				destructive: 'hsl(var(--destructive))',
+				success: 'hsl(var(--success))',
+				border: 'hsl(var(--border))',
+				ring: 'hsl(var(--ring))',
+				
+				legacyPrimary: 'var(--legacy-primary)',
 				darkPrimary: 'var(--darkPrimary)',
 				secondary: 'var(--secondary)',
 				tertiary: 'var(--tertiary)',

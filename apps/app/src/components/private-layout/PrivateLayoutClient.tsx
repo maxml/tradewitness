@@ -336,7 +336,12 @@ export default function PrivateLayoutClient({
                     </div>
 
                     <div className="flex items-center gap-4 text-sm">
-                        <a href={process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3000"} className="px-3 py-1.5 text-xs font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors">
+                        {isAdmin && (
+                            <Link href="/private/admin/features" className="px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:brightness-110 rounded-md transition-colors">
+                                Admin Dashboard
+                            </Link>
+                        )}
+                        <a href={process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3000"} className="px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:bg-card-alt rounded-md transition-colors">
                             Back to Home
                         </a>
                         {isMounted ? (
@@ -347,15 +352,18 @@ export default function PrivateLayoutClient({
                         ) : (
                             <>
                                 <span className="opacity-0">User</span>
-                                <div className="w-8 h-8 rounded-full bg-gray-200"></div>
+                                <div className="w-8 h-8 rounded-full bg-muted"></div>
                             </>
                         )}
                     </div>
                 </header>
-                <div className="flex-1 bg-white md:rounded-b-3xl border border-zinc-200 border-t-0 overflow-scroll 2xl:overflow-hidden">
+                <div className="flex-1 bg-background overflow-scroll 2xl:overflow-hidden">
                     {children}
                 </div>
             </div>
         </>
+    );
+}
+  </>
     );
 }
