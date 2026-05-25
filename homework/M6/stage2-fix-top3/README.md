@@ -22,17 +22,18 @@ f2a33448 fix(webhooks): make stripe webhook fail closed on bad signature        
 ## Tests
 
 Framework: **Vitest** (installed in `apps/app`; `apps/app/vitest.config.ts` resolves the `@/` alias).
+Root `pnpm test` delegates through Turbo to workspace test scripts.
 Runnable copies live with the code at `apps/app/tests/stage2/`; this folder holds submission copies.
 
 ```
-$ cd apps/app && npx vitest run tests/stage2/
+$ pnpm test
 
- ✓ tests/stage2/archive.idor.test.ts       (9 tests)   5 characterization + 4 fix-verification
- ✓ tests/stage2/stripe-webhook.test.ts     (3 tests)   2 characterization + 1 fix-verification
- ✓ tests/stage2/credit-minting.test.ts     (7 tests)   4 characterization + 3 fix-verification
+ ✓ @tradewitness/app tests/stage2/archive.idor.test.ts       (10 tests)  5 characterization + 5 fix-verification
+ ✓ @tradewitness/app tests/stage2/stripe-webhook.test.ts     (3 tests)   2 characterization + 1 fix-verification
+ ✓ @tradewitness/app tests/stage2/credit-minting.test.ts     (7 tests)   4 characterization + 3 fix-verification
 
  Test Files  3 passed (3)
-      Tests  19 passed (19)
+      Tests  20 passed (20)
 ```
 
 `npx tsc --noEmit` is also clean (0 errors).

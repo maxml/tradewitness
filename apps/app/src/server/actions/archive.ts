@@ -130,9 +130,11 @@ export async function getReportById(
             ),
         });
 
+        if (!report) return null;
+
         return {
             success: true,
-            report: report?.reportData as ReportType,
+            report: report.reportData as ReportType,
         };
     } catch (error) {
         console.error("Failed to fetch reports:", error);

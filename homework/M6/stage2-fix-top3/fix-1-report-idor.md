@@ -47,6 +47,8 @@
 +                eq(ReportsTable.userId, userId)
 +            ),
          });
++
++        if (!report) return null;
 ```
 
 `auth` and `and` were already imported in the file — no new imports, no new dependencies.
@@ -62,18 +64,19 @@
 Characterization tests pinned the invariant behavior **before** the fix (owner happy-path, empty-arg guard, DB error path) and still pass **after**. Fix-verification cases were added with the fix.
 
 ```
-✓ tests/stage2/archive.idor.test.ts (9 tests)
+✓ tests/stage2/archive.idor.test.ts (10 tests)
   characterization (invariant) — getReportById        3 ✓
   characterization (invariant) — saveReport           2 ✓
-  fix verification — IDOR closed                       4 ✓
+  fix verification — IDOR closed                       5 ✓
     ✓ getReportById rejects an unauthenticated caller and never queries
     ✓ getReportById scopes the lookup to the authenticated user
+    ✓ getReportById returns null when the scoped owner lookup finds no report
     ✓ saveReport rejects an unauthenticated caller and never inserts
     ✓ saveReport ignores a spoofed userId and writes under the session user
-Test Files  1 passed (1) · Tests 9 passed (9)
+Test Files  1 passed (1) · Tests 10 passed (10)
 ```
 
-(The 4 fix-verification cases fail on pre-fix code — verified — and pass post-fix.)
+(The 5 fix-verification cases fail on pre-fix code — verified — and pass post-fix.)
 
 ## Lessons learned
 

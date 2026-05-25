@@ -124,6 +124,16 @@ describe("fix verification — IDOR closed", () => {
         expect(findFirst).toHaveBeenCalledTimes(1);
     });
 
+    it("getReportById returns null when the scoped owner lookup finds no report", async () => {
+        authMock.mockResolvedValue({ userId: "user_owner_2f8a" });
+        findFirst.mockResolvedValue(undefined);
+
+        const res = await getReportById("rep_foreign_or_missing");
+
+        expect(res).toBeNull();
+        expect(findFirst).toHaveBeenCalledTimes(1);
+    });
+
     it("saveReport rejects an unauthenticated caller and never inserts", async () => {
         authMock.mockResolvedValue({ userId: null });
 
