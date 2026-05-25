@@ -1,5 +1,7 @@
 # TradeWitness Project Roadmap
 
+> **TODO(audit-2026-05-25):** several M3–M5 items (MCP / RAG / feature flags / dashboard) have shipped — tick or move them to a changelog.
+
 This document outlines the high-level tasks and current progress for the TradeWitness application development.
 
 ## 🟢 Completed Tasks

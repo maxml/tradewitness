@@ -1,5 +1,7 @@
 # Architecture Decisions & Services (WIP)
 
+> **TODO(audit-2026-05-25):** §5 ("cut paid Anthropic API for MVP") contradicts the live `/api/claude` + `/api/follow-up-claude` routes — reconcile. Formalized ADRs live in `adr/`.
+
 *Instructions: Write your thoughts or answers next to the "👤 User:" prompts. Save the file and tell me "done" in the chat. I will read it and append my responses next to "🤖 Architect:".*
 
 ---

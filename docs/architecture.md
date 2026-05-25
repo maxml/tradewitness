@@ -1,5 +1,7 @@
 # TradeWitness Architecture
 
+> **TODO(audit-2026-05-25):** predates M5 — the diagram omits the n8n auto-pilot layer and the MCP/RAG services (`mcps/feature-flags`, `mcps/search-docs`, `mcps/rag`). See `specs/` and `../project-index.json` for the current module map.
+
 Below is the C4 Container diagram representing the high-level architecture of the TradeWitness platform.
 
 ```mermaid
