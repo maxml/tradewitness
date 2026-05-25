@@ -26,6 +26,7 @@ What is checked in:
 - `simulate_wf1.py`, `simulate_wf2.py`.
 - `screenshots/trace-wf1.png`, `screenshots/trace-wf2-toggle.png`,
   `screenshots/trace-tg.png` — execution screenshots.
+- `screencast.mp4` — 2-minute end-to-end demo.
 - `n8n-import-notes.md`, `docs/`, this file.
 
 What is **not** checked in (gitignored): `.env.local`, `logs.json`,
@@ -220,7 +221,7 @@ propagated to Telegram as `"null"`. 6 is comfortable headroom for the
   the demo. If you want a clean tree, set it back to `Testing` via the
   Auto-Pilot button (`check` then manually edit) or by reverting the
   file.
-- **No screencast yet** — pending.
+- **Screencast** — `homework/M5/screencast.mp4` (2:00, 30 MB).
 
 ---
 
