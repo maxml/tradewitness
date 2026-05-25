@@ -1,4 +1,7 @@
-# Architecture Decisions Record
+# ADR 0003 — Turborepo + pnpm workspaces
+
+- **Status:** Accepted
+- **Confidence:** MEDIUM — the structure is visible in the repo (`turbo.json`, `pnpm-workspace.yaml`, two app folders with independent React/Next majors), but the historical motivation (two donor codebases, Tailwind v3/v4 conflict) is inferred from commit history and `UPSTREAM.md` rather than written down anywhere obvious.
 
 ## 1. Context
 

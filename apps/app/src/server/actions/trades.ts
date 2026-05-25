@@ -18,7 +18,13 @@ export async function createNewTradeRecord(
         return { error: true };
     }
 
-    await db.insert(TradeTable).values({ ...data, userId, id });
+    try {
+        await db.insert(TradeTable).values({ ...data, userId, id });
+    } catch (err) {
+        console.log(err);
+        return { error: true };
+    }
+    return;
 }
 
 export async function getAllTradeRecords(): Promise<Trades[]> {
@@ -80,8 +86,15 @@ export async function updateTradeRecord(
 export async function deleteTradeRecord(
     recordId: string
 ): Promise<{ error: boolean } | undefined> {
+    const { userId } = await auth();
+    if (userId == null) {
+        return { error: true };
+    }
+
     try {
-        await db.delete(TradeTable).where(eq(TradeTable.id, recordId));
+        await db
+            .delete(TradeTable)
+            .where(and(eq(TradeTable.id, recordId), eq(TradeTable.userId, userId)));
     } catch (err) {
         console.log(err);
         return { error: true };
