@@ -10,10 +10,37 @@ export default {
 	],
 	theme: {
 		extend: {
+			fontFamily: {
+				sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+				mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
+			},
 			colors: {
-				background: 'var(--background)',
-				foreground: 'var(--foreground)',
-				primary: 'var(--primary)',
+				background: 'hsl(var(--background) / <alpha-value>)',
+				foreground: 'hsl(var(--foreground) / <alpha-value>)',
+				card: {
+					DEFAULT: 'hsl(var(--card) / <alpha-value>)',
+					foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+				},
+				'card-alt': 'hsl(var(--card-alt) / <alpha-value>)',
+				primary: {
+					DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
+					foreground: 'hsl(var(--primary-fg) / <alpha-value>)'
+				},
+				muted: {
+					DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
+					foreground: 'hsl(var(--muted-foreground) / <alpha-value>)',
+				},
+				accent: {
+					DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
+					foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
+				},
+				destructive: 'hsl(var(--destructive) / <alpha-value>)',
+				success: 'hsl(var(--success) / <alpha-value>)',
+				border: 'hsl(var(--border) / <alpha-value>)',
+				input: 'hsl(var(--input) / <alpha-value>)',
+				ring: 'hsl(var(--ring) / <alpha-value>)',
+				
+				legacyPrimary: 'var(--legacy-primary)',
 				darkPrimary: 'var(--darkPrimary)',
 				secondary: 'var(--secondary)',
 				tertiary: 'var(--tertiary)',

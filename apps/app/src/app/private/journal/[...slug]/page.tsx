@@ -26,5 +26,12 @@ export default async function JournalEntryPage({ params }: PageProps) {
 
     const entry = await getJournalEntry(dateStr);
 
-    return <JournalEditor date={dateStr} initialContent={entry?.content as Record<string, unknown> | undefined} />;
+    return (
+        <div className="min-h-full bg-background px-4 py-8 text-foreground md:px-8">
+            <JournalEditor
+                date={dateStr}
+                initialContent={entry?.content as Record<string, unknown> | undefined}
+            />
+        </div>
+    );
 }

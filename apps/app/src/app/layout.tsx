@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import ReduxProvider from "@/components/ReduxProvider";
-
-const mainFont = localFont({
-    src: "./fonts/main.woff2",
-    variable: "--main",
-    weight: "100 900",
-});
 
 export const metadata: Metadata = {
     title: "TradeWitness App",
@@ -21,8 +16,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" suppressHydrationWarning>
-            <body className={`${mainFont.className} antialiased`} suppressHydrationWarning>
+        <html lang="en" suppressHydrationWarning className="dark">
+            <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`} suppressHydrationWarning>
                 <ReduxProvider>
                     <ClerkProvider>{children}</ClerkProvider>
                 </ReduxProvider>

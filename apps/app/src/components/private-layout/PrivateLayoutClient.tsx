@@ -41,12 +41,14 @@ interface PrivateLayoutClientProps {
     children: ReactNode;
     initialTradeRecords: Trades[];
     initialStrategies: Strategy[];
+    isAdmin: boolean;
 }
 
 export default function PrivateLayoutClient({
     children,
     initialTradeRecords,
     initialStrategies,
+    isAdmin,
 }: PrivateLayoutClientProps) {
     const { user } = useUser();
     const dispatch = useAppDispatch();
@@ -119,8 +121,8 @@ export default function PrivateLayoutClient({
     return (
         <>
             <Toaster position="top-right" richColors />
-            <div className="flex flex-col h-svh md:h-screen bg-darkPrimary md:p-2">
-                <header className="px-3 md:px-6 py-3 flex items-center justify-between bg-white md:rounded-t-3xl border-b md:border border-zinc-200">
+            <div className="flex flex-col h-svh md:h-screen bg-background md:p-2">
+                <header className="px-3 md:px-6 py-3 flex items-center justify-between bg-card border-b border-border text-foreground">
                     <MobileNavigation />
                     <div className="hidden md:flex gap-2 items-center">
                         <Image
@@ -141,7 +143,7 @@ export default function PrivateLayoutClient({
                     <div className="hidden md:flex gap-4">
                         <NavigationMenu>
                             <NavigationMenuList>
-                                <NavigationMenuItem className="px-4 py-2 text-[.85rem] text-zinc-700 rounded-md transition-colors hover:bg-zinc-100">
+                                <NavigationMenuItem className="px-4 py-2 text-[.85rem] text-muted rounded-md transition-colors hover:bg-card-alt hover:text-foreground">
                                     <Link href="/private/calendar">
                                         Calendar{" "}
                                     </Link>
@@ -155,14 +157,14 @@ export default function PrivateLayoutClient({
                                     </Link>
                                 </NavigationMenuItem> */}
                                 <NavigationMenuItem>
-                                    <NavigationMenuTrigger className="text-[.85rem] text-zinc-700">
+                                    <NavigationMenuTrigger className="text-[.85rem] text-muted">
                                         Analytics
                                     </NavigationMenuTrigger>
                                     <NavigationMenuContent>
                                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                                             <Link
                                                 href="/private/history"
-                                                className="hover:bg-zinc-100 px-3 py-2 rounded-md cursor-pointer">
+                                                className="hover:bg-card-alt px-3 py-2 rounded-md cursor-pointer transition-colors">
                                                 <div className="flex gap-2 items-center">
                                                     <VscHistory />
                                                     <h1>History</h1>
@@ -175,7 +177,7 @@ export default function PrivateLayoutClient({
                                             </Link>
                                             <Link
                                                 href="/private/strategies"
-                                                className="hover:bg-zinc-100 px-3 py-2 rounded-md cursor-pointer">
+                                                className="hover:bg-card-alt px-3 py-2 rounded-md cursor-pointer transition-colors">
                                                 <div className="flex gap-2 items-center">
                                                     <PiStrategyLight />
                                                     <h1>Strategies</h1>
@@ -187,7 +189,7 @@ export default function PrivateLayoutClient({
                                             </Link>
                                             <Link
                                                 href="/private/statistics"
-                                                className="hover:bg-zinc-100 px-3 py-2 rounded-md cursor-pointer">
+                                                className="hover:bg-card-alt px-3 py-2 rounded-md cursor-pointer transition-colors">
                                                 <div className="flex gap-2 items-center">
                                                     <LuChartSpline />
                                                     <h1>Statistics</h1>
@@ -199,7 +201,7 @@ export default function PrivateLayoutClient({
                                             </Link>
                                             <Link
                                                 href="/private/journal"
-                                                className="hover:bg-zinc-100 px-3 py-2 rounded-md cursor-pointer">
+                                                className="hover:bg-card-alt px-3 py-2 rounded-md cursor-pointer transition-colors">
                                                 <div className="flex gap-2 items-center">
                                                     <BsJournalCheck />
                                                     <h1>Journal</h1>
@@ -214,7 +216,7 @@ export default function PrivateLayoutClient({
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
                                 <NavigationMenuItem>
-                                    <NavigationMenuTrigger className="text-[.85rem] text-zinc-700">
+                                    <NavigationMenuTrigger className="text-[.85rem] text-muted">
                                         Report AI
                                     </NavigationMenuTrigger>
                                     <NavigationMenuContent>
@@ -234,7 +236,7 @@ export default function PrivateLayoutClient({
                                                     </div>
                                                 </NavigationMenuLink>
                                             </li>
-                                            <li className="hover:bg-zinc-100 px-3 py-2 rounded-md cursor-pointer">
+                                            <li className="hover:bg-card-alt px-3 py-2 rounded-md cursor-pointer transition-colors">
                                                 <Link href="/private/tradeAI">
                                                     <div className="flex gap-2 items-center">
                                                         <SiClaude className="text-[#da7756]" />
@@ -246,7 +248,7 @@ export default function PrivateLayoutClient({
                                                     </span>
                                                 </Link>
                                             </li>
-                                            <li className="hover:bg-zinc-100 px-3 py-2 rounded-md cursor-pointer">
+                                            <li className="hover:bg-card-alt px-3 py-2 rounded-md cursor-pointer transition-colors">
                                                 <Link href="/private/tokens">
                                                     <div className="flex gap-2 items-center">
                                                         <RiMoneyDollarCircleLine />
@@ -257,7 +259,7 @@ export default function PrivateLayoutClient({
                                                     </span>
                                                 </Link>
                                             </li>
-                                            <li className="hover:bg-zinc-100 px-3 py-2 rounded-md cursor-pointer">
+                                            <li className="hover:bg-card-alt px-3 py-2 rounded-md cursor-pointer transition-colors">
                                                 <Link href="/private/reports-history">
                                                     <div className="flex gap-2 items-center">
                                                         <VscFolderLibrary />
@@ -273,7 +275,7 @@ export default function PrivateLayoutClient({
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
                                 <NavigationMenuItem>
-                                    <NavigationMenuTrigger className="text-[.85rem] text-zinc-700">
+                                    <NavigationMenuTrigger className="text-[.85rem] text-muted">
                                         Ecosystem
                                     </NavigationMenuTrigger>
                                     <NavigationMenuContent>
@@ -281,7 +283,7 @@ export default function PrivateLayoutClient({
                                             <Link
                                                 href="https://www.investsquid.com"
                                                 target="_blank"
-                                                className="hover:bg-zinc-100 px-3 py-2 rounded-md cursor-pointer">
+                                                className="hover:bg-card-alt px-3 py-2 rounded-md cursor-pointer transition-colors">
                                                 <div className="flex gap-4 items-center">
                                                     <h1>AI Investor</h1>
                                                     <ExternalLink className="h-4" />
@@ -295,7 +297,7 @@ export default function PrivateLayoutClient({
 
                                             <Link
                                                 href="/private/feedback"
-                                                className="hover:bg-zinc-100 px-3 py-2 rounded-md">
+                                                className="hover:bg-card-alt px-3 py-2 rounded-md transition-colors">
                                                 <div className="flex gap-2 items-center">
                                                     <h1>Feedback</h1>
                                                 </div>
@@ -306,7 +308,7 @@ export default function PrivateLayoutClient({
                                             <Link
                                                 href="https://github.com/Bilovodskyi/ai-trade-journal"
                                                 target="_blank"
-                                                className="hover:bg-zinc-100 px-3 py-2 rounded-md">
+                                                className="hover:bg-card-alt px-3 py-2 rounded-md transition-colors">
                                                 <div className="flex gap-2 items-center">
                                                     <h1>Give a ⭐ on GitHub</h1>
                                                     <FaGithub />
@@ -316,10 +318,10 @@ export default function PrivateLayoutClient({
                                                     it a star on GitHub.
                                                 </span>
                                             </Link>
-                                            <li className="hover:bg-zinc-100 px-3 py-2 rounded-md">
+                                            <li className="hover:bg-card-alt px-3 py-2 rounded-md transition-colors">
                                                 <div className="flex gap-4 items-center">
                                                     <h1>Articles</h1>
-                                                    <span className="text-[.8rem] bg-gradient-to-r from-emerald-400 to-blue-300 text-transparent bg-clip-text">
+                                                    <span className="text-[.8rem] text-muted">
                                                         Coming soon...
                                                     </span>
                                                 </div>
@@ -336,7 +338,12 @@ export default function PrivateLayoutClient({
                     </div>
 
                     <div className="flex items-center gap-4 text-sm">
-                        <a href={process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3000"} className="px-3 py-1.5 text-xs font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors">
+                        {isAdmin && (
+                            <Link href="/private/admin/features" className="px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:brightness-110 rounded-md transition-colors">
+                                Admin Dashboard
+                            </Link>
+                        )}
+                        <a href={process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3000"} className="px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:bg-card-alt rounded-md transition-colors">
                             Back to Home
                         </a>
                         {isMounted ? (
@@ -347,12 +354,12 @@ export default function PrivateLayoutClient({
                         ) : (
                             <>
                                 <span className="opacity-0">User</span>
-                                <div className="w-8 h-8 rounded-full bg-gray-200"></div>
+                                <div className="w-8 h-8 rounded-full bg-muted"></div>
                             </>
                         )}
                     </div>
                 </header>
-                <div className="flex-1 bg-white md:rounded-b-3xl border border-zinc-200 border-t-0 overflow-scroll 2xl:overflow-hidden">
+                <div className="flex-1 bg-background overflow-scroll 2xl:overflow-hidden">
                     {children}
                 </div>
             </div>

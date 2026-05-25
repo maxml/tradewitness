@@ -39,12 +39,12 @@ const MenuBar = ({ editor }: { editor: Editor }) => {
     }
 
     const buttonClass = (isActive: boolean) =>
-        `p-2 rounded hover:bg-zinc-100 transition-colors ${
-            isActive ? "bg-zinc-200 text-zinc-900" : "text-zinc-600"
+        `rounded-md p-2 transition-colors hover:bg-card-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+            isActive ? "bg-card-alt text-foreground" : "text-muted"
         }`;
 
     return (
-        <div className="border border-zinc-200 rounded-lg p-2 mb-4 flex flex-wrap gap-1 bg-white sticky top-0 z-10">
+        <div className="sticky top-0 z-10 mb-4 flex flex-wrap gap-1 rounded-lg border border-border bg-card p-2">
             <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleBold().run()}
@@ -74,7 +74,7 @@ const MenuBar = ({ editor }: { editor: Editor }) => {
                 <Code className="h-4 w-4" />
             </button>
 
-            <div className="w-px h-6 bg-zinc-300 mx-1" />
+            <div className="mx-1 h-6 w-px bg-border" />
 
             <button
                 type="button"
@@ -98,7 +98,7 @@ const MenuBar = ({ editor }: { editor: Editor }) => {
                 <Heading3 className="h-4 w-4" />
             </button>
 
-            <div className="w-px h-6 bg-zinc-300 mx-1" />
+            <div className="mx-1 h-6 w-px bg-border" />
 
             <button
                 type="button"
@@ -122,7 +122,7 @@ const MenuBar = ({ editor }: { editor: Editor }) => {
                 <Quote className="h-4 w-4" />
             </button>
 
-            <div className="w-px h-6 bg-zinc-300 mx-1" />
+            <div className="mx-1 h-6 w-px bg-border" />
 
             <button
                 type="button"
@@ -159,7 +159,7 @@ export function JournalEditor({ date, initialContent }: JournalEditorProps) {
         immediatelyRender: false,
         editorProps: {
             attributes: {
-                class: "prose prose-zinc prose-base max-w-none focus:outline-none min-h-[calc(100vh-300px)] text-[16px] [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
+                class: "prose prose-zinc dark:prose-invert prose-base max-w-none focus:outline-none min-h-[calc(100vh-300px)] text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
             },
             
         },
@@ -209,15 +209,15 @@ export function JournalEditor({ date, initialContent }: JournalEditorProps) {
     }
 
     return (
-        <div className="max-w-3xl mx-auto py-8 px-4">
+        <div className="mx-auto w-full max-w-3xl">
             <style>{`
                 .tiptap p {
-                    font-size: 1.1rem !important;
+                    font-size: 1rem !important;
                     line-height: 1.6;
                 }
             `}</style>
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-zinc-800">
+                <h1 className="text-3xl font-bold text-foreground">
                     {dayjs(date).format("dddd, MMMM D, YYYY")}
                 </h1>
                 <div className="flex items-center gap-2">
