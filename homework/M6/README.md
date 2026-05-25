@@ -4,8 +4,8 @@
 **Branch:** `m6-agents` · **Date:** 2026-05-25
 **Note on stack:** the homework examples use Python/Mongo/`proshop_mern`; this fork is TS/Postgres. Mappings are in `PLAN.md` (Шаг 0). Tests use **Vitest** (not pytest).
 
-> **Status:** Stages 1–4 artifacts are complete. **Stage 2 code fixes are now applied** (4 commits on `m6-agents`, not pushed).
-> The remaining DEFERRED items are the live-repo "install" steps of Stage 3 (root `project-index.json`, `.claude/` install, `docs/` swap) and the Stage 4 test run/coverage screenshot — see the table and the bottom section.
+> **Status:** All 4 stages complete (artifacts + live changes), committed on `m6-agents` (not pushed).
+> Stage 2 fixes applied with characterization tests; Stage 3 living-docs installed into the live repo; Stage 4 suites run green (27 tests). Only the optional `coverage-report.png` / `hook-screenshot.png` screenshots remain (text equivalents are in the folders).
 
 ## Status by stage
 
@@ -13,8 +13,8 @@
 |---|---|---|
 | **1 — Multi-Agent Code Review** | ✅ complete | `stage1-code-review/`: security/performance/architecture `.md` + `.jsonl`, `synthesis.md` (Top-3, cross-mate, token estimate). 3 sub-agents via Agent tool. |
 | **2 — Fix Top-3** | ✅ complete | `stage2-fix-top3/`: 3 `fix-N.md` + `tests/` (19 Vitest tests). Characterization-tests-first then fixes; 4 commits (tests → fix#1 → fix#3 → fix#2). `tsc` clean. Committed locally on `m6-agents` (not pushed). |
-| **3 — Legacy Audit + Living Docs** | ✅ artifacts complete (live install deferred) | `stage3-living-docs/`: `docs-audit.md`, `00-plan.md`, `project-index.json` (valid), `update_project_index.py`, `specs/` (2 modules), `stage3-synthesis.md`, `CLAUDE.md` copy w/ 2 sections. |
-| **4 — Tests Agent** | ✅ artifacts complete (run deferred) | `stage4-tests-agent/`: `test-writer-mate.md`, `service-1-tests/`, `service-2-tests/`, `README.md`. Coverage screenshot deferred (Vitest not installed). |
+| **3 — Legacy Audit + Living Docs** | ✅ complete (artifacts + live install) | `stage3-living-docs/` artifacts + LIVE: root `project-index.json`, `.claude/agents/` (5 mates) + `.claude/scripts/`, 2 sections in `CLAUDE.md`/`AGENTS.md`, `docs/specs/` + `docs/README.md`, 17 task logs → `docs-archived-2026-05-25/`, PostToolUse hook (fired). |
+| **4 — Tests Agent** | ✅ complete | `stage4-tests-agent/`: `test-writer-mate.md`, `service-1-tests/`, `service-2-tests/`, `coverage-report.txt`. Runnable copies in `packages/feature-flags-core` + `mcps/rag`; **27 tests green** (12 + 15). |
 
 ## Stage 1 — Top-3 for Stage 2 (cross-mate consensus)
 
@@ -31,13 +31,18 @@ homework/M6/
 ├── PLAN.md                      # full plan + Шаг 0 mapping
 ├── README.md                    # this file
 ├── stage1-code-review/          # ✅ 3 reviews + jsonl + synthesis
-├── stage2-fix-top3/             # 🔶 deferred (tests/ empty placeholder)
-├── stage3-living-docs/          # ✅ audit, plan, index, specs, script, CLAUDE copy
-└── stage4-tests-agent/          # ✅ agent + 2 service test suites + README
+├── stage2-fix-top3/             # ✅ 3 fix-N.md + tests/ (19 tests)
+├── stage3-living-docs/          # ✅ audit, plan, index, specs, script, docs-new/docs-archived, hook-evidence
+└── stage4-tests-agent/          # ✅ agent + 2 service test suites + coverage-report.txt
 ```
 
-## To finish the deferred parts (when no-code constraint is lifted)
+## Live-repo changes (Stage 2 + Stage 3), all on `m6-agents`
 
-- **Stage 2:** ✅ done — fixes applied with characterization tests (4 commits on `m6-agents`). Remaining: `git push` when ready.
-- **Stage 3 live install:** `cp project-index.json` to root; `cp update_project_index.py` to `.claude/scripts/`; prepend the 2 sections to real `CLAUDE.md`/`AGENTS.md`; build `docs-new/` + archive 📦/❌ task logs (keep `docs/m3-corpus` in place — it's RAG input). See `stage3-living-docs/00-plan.md`.
-- **Stage 4 run:** `pnpm add -D vitest` → `npx vitest run` → capture `coverage-report.png`. See `stage4-tests-agent/README.md`.
+- **Stage 2 fixes:** `apps/app/src/server/actions/archive.ts`, `…/stripe.ts`, `…/user.ts`, new `…/server/billing.ts`, `…/api/webhooks/stripe/route.ts` + `apps/app/tests/stage2/`.
+- **Stage 3 living docs:** root `project-index.json`, `.claude/agents/` (5 mates + templates), `.claude/scripts/update_project_index.py`, `.claude/settings.local.json` (hooks), `CLAUDE.md` + `AGENTS.md` (2 sections), `docs/specs/`, `docs/README.md`, `docs/*` TODO markers, `docs-archived-2026-05-25/`.
+- **Stage 4 tests:** `packages/feature-flags-core` (+vitest) and `mcps/rag` (+vitest) test suites.
+
+## Remaining (optional)
+
+- `coverage-report.png` / `hook-screenshot.png` — screenshots; text equivalents already in the folders (`coverage-report.txt`, `hook-evidence.txt`).
+- `git push origin m6-agents` — when you're ready (say the word).

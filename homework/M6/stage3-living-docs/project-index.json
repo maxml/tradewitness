@@ -1,0 +1,776 @@
+{
+  "name": "tradewitness-mono",
+  "type": "fullstack-monorepo",
+  "description": "TradeWitness — trading journal & analytics SaaS. pnpm + Turborepo monorepo. Next.js app + marketing landing, Drizzle/Supabase Postgres, Clerk auth, Stripe billing, Cloudflare R2 storage, plus M3-M5 AI additions: feature-flags MCP, docs-search MCP, RAG (Qdrant) and an n8n auto-pilot layer.",
+  "tech_stack": {
+    "app": "Next.js (App Router) + React + TypeScript (strict) + TailwindCSS v3 + Redux Toolkit",
+    "landing": "Next.js + TypeScript (no Tailwind — v4 avoided per CLAUDE.md)",
+    "database": "Supabase Postgres via Drizzle ORM (RLS disabled — app-layer authz; see ADR-0001)",
+    "auth": "Clerk (sessions/JWT) + svix-verified webhooks",
+    "billing": "Stripe (checkout + signed webhooks)",
+    "storage": "Cloudflare R2 via aws4fetch (ADR-0002)",
+    "ai_additions": [
+      "feature-flags MCP (stdio + HTTP wrapper) — Node/TS",
+      "search-docs MCP (vector search over docs/m3-corpus) — Node/TS",
+      "RAG ingest/query over Qdrant — Node/TS",
+      "n8n auto-pilot workflows (M5)"
+    ],
+    "build": "Turborepo (ADR-0003) + pnpm workspaces"
+  },
+  "subprojects": {
+    "app": {
+      "path": "apps/app/",
+      "description": "Main authenticated product: trade journal, statistics, strategies, AI report (OCR/Claude), feature dashboard.",
+      "tech": "Next.js App Router + Drizzle + Clerk + Stripe + R2",
+      "key_paths": {
+        "server_actions": "apps/app/src/server/actions/",
+        "api_routes": "apps/app/src/app/api/",
+        "db": "apps/app/src/drizzle/",
+        "lib": "apps/app/src/lib/",
+        "components": "apps/app/src/components/",
+        "features": "apps/app/src/features/",
+        "zod_schemas": "apps/app/src/zodSchema/"
+      }
+    },
+    "landing": {
+      "path": "apps/landing/",
+      "description": "Public marketing site. TailwindCSS v4 intentionally avoided (CLAUDE.md rule).",
+      "tech": "Next.js + TypeScript"
+    },
+    "feature_flags_mcp": {
+      "path": "mcps/feature-flags/",
+      "description": "Feature-flags MCP server: stdio (index.ts) + HTTP wrapper for n8n (http.ts). Reads/writes data/feature-flags/features.json via the Next route; validates with DependencyGraph from feature-flags-core.",
+      "entry": "mcps/feature-flags/src/index.ts",
+      "tech": "Node/TS + @modelcontextprotocol/sdk + zod",
+      "spec": "docs/specs/feature-flags-mcp-spec.md"
+    },
+    "search_docs_mcp": {
+      "path": "mcps/search-docs/",
+      "description": "Docs-search MCP: vector search over docs/m3-corpus (ADRs, incidents, runbooks, features). Used by the search_project_docs tool.",
+      "entry": "mcps/search-docs/src/index.ts",
+      "tech": "Node/TS + embeddings + Qdrant"
+    },
+    "rag": {
+      "path": "mcps/rag/",
+      "description": "RAG pipeline: ingest.ts chunks+embeds the corpus and upserts to Qdrant; query.ts embeds a query and searches.",
+      "entry": "mcps/rag/query.ts",
+      "tech": "Node/TS + @xenova/transformers + langchain + Qdrant",
+      "spec": "docs/specs/rag-spec.md"
+    },
+    "feature_flags_core": {
+      "path": "packages/feature-flags-core/",
+      "description": "Shared core: DependencyGraph + state-change validation. Canonical invariant for feature-flag dependencies.",
+      "tech": "TypeScript library"
+    },
+    "api_types": {
+      "path": "packages/api-types/",
+      "description": "Declared shared wire-format types. NOTE: currently an orphan (imported by zero .ts files) — see architecture-review.md.",
+      "tech": "TypeScript types"
+    }
+  },
+  "system_folders": {
+    ".claude/": "Claude Code config: agents/, scripts/, settings.local.json",
+    ".claude/agents/": "Sub-agent definitions (security/performance/architecture/legacy-auditor/test-writer mates)",
+    ".claude/scripts/": "Maintenance scripts incl. update_project_index.py",
+    ".codex/": "Codex agent rules (mirror of AGENTS.md)",
+    "docs/": "Living docs: adr/, architecture, specs/ (M6), and the m3-corpus RAG fixture",
+    "docs/adr/": "Real Architecture Decision Records (0001-0003) + proposed 0004-0005 (M6)",
+    "docs/m3-corpus/": "Synthetic RAG corpus ingested by search-docs MCP — fixture DATA, not project prose (do not treat as authoritative docs)",
+    "docs/specs/": "M6 reverse-engineered module specs (feature-flags MCP, RAG)",
+    "data/feature-flags/": "features.json — system of record for feature flags (NEVER edit directly; use MCP)",
+    "homework/": "Course homework submissions (M4, M5, M6)",
+    "scripts/": "Repo utility scripts"
+  },
+  "root_files": {
+    "CLAUDE.md": "Claude Code project rules (TS strict, Tailwind policy, drizzle-kit, MCP usage)",
+    "AGENTS.md": "Codex/agent rules mirror of CLAUDE.md",
+    "GEMINI.md": "Gemini agent rules mirror",
+    "DESIGN.md": "M4 design system rules",
+    "README.md": "Project overview",
+    "FINDINGS.md": "Earlier audit findings",
+    "report.md": "Homework session report",
+    "docker-compose.yml": "Local infra (Qdrant etc.)",
+    "turbo.json": "Turborepo pipeline config",
+    "pnpm-workspace.yaml": "pnpm workspace definition",
+    ".env.example": "Environment variable template (canonical var list)"
+  },
+  "hard_rules": [
+    "ALWAYS read project-index.json FIRST at session start for repo structure orientation (this file).",
+    "Always use TypeScript with strict mode.",
+    "Feature flags: NEVER edit data/feature-flags/features.json directly — use the feature-flags MCP tools (get_feature_info, set_feature_state, ...).",
+    "Docs questions: use the search_project_docs (search-docs MCP) tool first — do not grep docs/ directly unless it fails.",
+    "Drizzle ORM: run `drizzle-kit generate` after any schema change.",
+    "Avoid TailwindCSS in apps/landing (v4); it is allowed in apps/app (v3).",
+    "Authorization has NO database backstop (RLS disabled, ADR-0001): every user-owned read/write MUST carry auth() + eq(userId); derive userId from the session, never from a caller-supplied argument (see proposed ADR-0004).",
+    "Use Conventional Commits (feat:, fix:, docs:, chore:, refactor:; scope optional).",
+    "Never commit real secrets; .env.example is the canonical variable list.",
+    "Design changes must follow DESIGN.md."
+  ],
+  "ai_routing": {
+    "feature_flag_queries": "feature-flags MCP get_feature_info (not direct features.json reads)",
+    "feature_flag_changes": "feature-flags MCP set_feature_state / dependency-aware tools",
+    "docs_search": "search-docs MCP search_project_docs (not grep + read of docs/)",
+    "structure_questions": "this project-index.json (do not walk the filesystem tree)",
+    "module_behavior": "docs/specs/*-spec.md (reverse-engineered specs for MCP + RAG)",
+    "architecture_decisions": "docs/adr/ (0001-0003 real; 0004-0005 proposed in M6)"
+  },
+  "filesystem_tree": {
+    ".": [
+      ".agents",
+      ".claude",
+      ".codex",
+      ".env.example",
+      ".env.local",
+      ".gitignore",
+      ".node-version",
+      ".npmrc",
+      ".nvmrc",
+      "AGENTS.md",
+      "CLAUDE.md",
+      "DESIGN.md",
+      "FINDINGS.md",
+      "GEMINI.md",
+      "LICENSE",
+      "LICENSE-COMMERCIAL.md",
+      "NOTICE",
+      "README.md",
+      "UPSTREAM.md",
+      "apps",
+      "data",
+      "docker-compose.yml",
+      "docs",
+      "docs-archived-2026-05-25",
+      "homework",
+      "m3-mcp-inspector-tools.png",
+      "mcps",
+      "package.json",
+      "packages",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "project-index.json",
+      "report.md",
+      "scripts",
+      "turbo.json"
+    ],
+    ".claude": [
+      "agents",
+      "scripts",
+      "settings.local.json"
+    ],
+    ".claude/scripts": [
+      "update_project_index.py"
+    ],
+    ".claude/agents": [
+      "README.md",
+      "architecture-mate.md",
+      "legacy-auditor-mate.md",
+      "performance-mate.md",
+      "security-mate.md",
+      "templates",
+      "test-writer-mate.md"
+    ],
+    ".claude/agents/templates": [
+      "docs-audit.template.md"
+    ],
+    "scripts": [
+      "db-smoke.sh",
+      "generate-m3-corpus.ts"
+    ],
+    ".agents": [],
+    "docs-archived-2026-05-25": [
+      "task-logs"
+    ],
+    "docs-archived-2026-05-25/task-logs": [
+      "task1-monorepo-setup.md",
+      "task10-1-feature-flags-mcp.md",
+      "task10-mcp-rag-homework.md",
+      "task11-qdrant-rag-search-mcp.md",
+      "task12-report-rules-commits.md",
+      "task13-m4-design-system.md",
+      "task14-m4-ui-redesign.md",
+      "task15-m4-stabilization.md",
+      "task15-m4-ui-refinement.md",
+      "task2-infrastructure-migration.md",
+      "task3-ai-ide-setup.md",
+      "task4-ai-decoupling.md",
+      "task5-journedge-math.md",
+      "task6-rebranding.md",
+      "task7-desktop-collector.md",
+      "task8-mentor-views.md",
+      "task9-docker-deployment.md"
+    ],
+    "homework": [
+      "M4",
+      "M5",
+      "M6"
+    ],
+    "homework/M6": [
+      "PLAN.md",
+      "README.md",
+      "stage1-code-review",
+      "stage2-fix-top3",
+      "stage3-living-docs",
+      "stage4-tests-agent"
+    ],
+    "homework/M6/stage2-fix-top3": [
+      "README.md",
+      "fix-1-report-idor.md",
+      "fix-2-credit-minting.md",
+      "fix-3-stripe-webhook.md",
+      "tests"
+    ],
+    "homework/M6/stage2-fix-top3/tests": [
+      "archive.idor.test.ts",
+      "credit-minting.test.ts",
+      "stripe-webhook.test.ts",
+      "vitest.config.ts.ref"
+    ],
+    "homework/M6/stage1-code-review": [
+      "architecture-findings.jsonl",
+      "architecture-review.md",
+      "homework",
+      "performance-findings.jsonl",
+      "performance-review.md",
+      "security-findings.jsonl",
+      "security-review.md",
+      "synthesis.md"
+    ],
+    "homework/M6/stage1-code-review/homework": [
+      "M6"
+    ],
+    "homework/M6/stage3-living-docs": [
+      "00-plan.md",
+      "CLAUDE.md",
+      "docs-archived",
+      "docs-audit.md",
+      "docs-new",
+      "hook-evidence.txt",
+      "project-index.json",
+      "specs",
+      "stage3-synthesis.md",
+      "update_project_index.py"
+    ],
+    "homework/M6/stage3-living-docs/docs-archived": [
+      "task-logs"
+    ],
+    "homework/M6/stage3-living-docs/specs": [
+      "feature-flags-mcp-spec.md",
+      "rag-spec.md"
+    ],
+    "homework/M6/stage3-living-docs/docs-new": [
+      "README.md",
+      "ROADMAP.md",
+      "adr",
+      "architecture-decisions.md",
+      "architecture.md",
+      "specs"
+    ],
+    "homework/M6/stage4-tests-agent": [
+      "README.md",
+      "coverage-report.txt",
+      "service-1-tests",
+      "service-2-tests",
+      "test-writer-mate.md"
+    ],
+    "homework/M6/stage4-tests-agent/service-1-tests": [
+      "feature-flags-core.test.ts",
+      "feature-flags-mcp.integration.test.ts"
+    ],
+    "homework/M6/stage4-tests-agent/service-2-tests": [
+      "rag.test.ts"
+    ],
+    "homework/M5": [
+      ".env.example",
+      ".env.local",
+      "README.md",
+      "docs",
+      "findings.md",
+      "logs.json",
+      "n8n-data",
+      "n8n-import-notes.md",
+      "review.md",
+      "screencast.mp4",
+      "screenshots",
+      "simulate_wf1.py",
+      "simulate_wf2.py",
+      "wf1-manual-trigger.json",
+      "wf2-scheduled-monitor.json"
+    ],
+    "homework/M5/screenshots": [
+      "trace-tg.png",
+      "trace-wf1.png",
+      "trace-wf2-toggle.png"
+    ],
+    "homework/M5/docs": [
+      "01-setup.md",
+      "02-wf1-manual-trigger.md",
+      "03-wf2-scheduled-monitor.md",
+      "04-simulators.md",
+      "05-hallucination-test.md",
+      "07-screencast.md"
+    ],
+    "homework/M5/n8n-data": [
+      "config",
+      "database.sqlite",
+      "database.sqlite-shm",
+      "database.sqlite-wal",
+      "n8nEventLog.log",
+      "nodes",
+      "storage"
+    ],
+    "homework/M5/n8n-data/nodes": [
+      "package.json"
+    ],
+    "homework/M5/n8n-data/storage": [],
+    "homework/M4": [
+      "README.md"
+    ],
+    "apps": [
+      "app",
+      "landing"
+    ],
+    "apps/landing": [
+      ".env.example",
+      ".env.local",
+      ".gitignore",
+      "LICENSE",
+      "README.md",
+      "docs",
+      "eslint.config.mjs",
+      "next-env.d.ts",
+      "next.config.ts",
+      "package.json",
+      "postcss.config.mjs",
+      "public",
+      "src",
+      "supabase-schema.sql",
+      "tsconfig.json",
+      "tsconfig.tsbuildinfo"
+    ],
+    "apps/landing/src": [
+      "app",
+      "components",
+      "context",
+      "lib",
+      "types"
+    ],
+    "apps/landing/src/lib": [
+      "i18n",
+      "supabase.ts"
+    ],
+    "apps/landing/src/types": [
+      "index.ts"
+    ],
+    "apps/landing/src/components": [
+      "ThemeProvider.tsx",
+      "blog",
+      "home",
+      "layout",
+      "projects",
+      "ui"
+    ],
+    "apps/landing/src/context": [
+      "LocaleContext.tsx"
+    ],
+    "apps/landing/src/app": [
+      "about",
+      "blog",
+      "contact",
+      "experience",
+      "favicon.ico",
+      "globals.css",
+      "layout.tsx",
+      "loading.tsx",
+      "page.tsx",
+      "projects",
+      "skills"
+    ],
+    "apps/landing/docs": [
+      "HOW_TO_ADD_ARTICLES.md"
+    ],
+    "apps/landing/public": [
+      "file.svg",
+      "globe.svg",
+      "next.svg",
+      "vercel.svg",
+      "window.svg"
+    ],
+    "apps/app": [
+      ".env.example",
+      ".env.local",
+      ".gitignore",
+      "CODE_OF_CONDUCT.md",
+      "LICENSE",
+      "NOTICE",
+      "README.md",
+      "components.json",
+      "drizzle",
+      "drizzle.config.ts",
+      "eslint.config.mjs",
+      "next-env.d.ts",
+      "next.config.ts",
+      "package.json",
+      "postcss.config.mjs",
+      "public",
+      "src",
+      "tailwind.config.ts",
+      "tests",
+      "tsconfig.json",
+      "tsconfig.tsbuildinfo",
+      "vercel.json",
+      "vitest.config.ts"
+    ],
+    "apps/app/drizzle": [
+      "0000_large_sunfire.sql",
+      "0001_minor_shinko_yamashiro.sql",
+      "0002_round_black_crow.sql",
+      "0003_dizzy_hardball.sql",
+      "0004_curious_ghost_rider.sql",
+      "0005_salty_vengeance.sql",
+      "0006_luxuriant_jigsaw.sql",
+      "0007_nasty_doctor_octopus.sql",
+      "0008_parched_masque.sql",
+      "0009_fixed_big_bertha.sql",
+      "0010_chemical_shotgun.sql",
+      "0011_organic_celestials.sql",
+      "0012_tired_anita_blake.sql",
+      "0013_clean_peter_quill.sql",
+      "0014_medical_miss_america.sql",
+      "0015_mushy_romulus.sql",
+      "0016_majestic_nomad.sql",
+      "0017_workable_aaron_stack.sql",
+      "0018_handy_anita_blake.sql",
+      "0019_bent_kinsey_walden.sql",
+      "0020_add_close_events_and_other_details.sql",
+      "0020_charming_gertrude_yorkes.sql",
+      "0021_add_custom_field_names.sql",
+      "0021_lyrical_exiles.sql",
+      "meta",
+      "relations.ts",
+      "schema.ts"
+    ],
+    "apps/app/drizzle/meta": [
+      "0000_snapshot.json",
+      "0001_snapshot.json",
+      "0002_snapshot.json",
+      "0003_snapshot.json",
+      "0004_snapshot.json",
+      "0005_snapshot.json",
+      "0006_snapshot.json",
+      "0007_snapshot.json",
+      "0008_snapshot.json",
+      "0009_snapshot.json",
+      "0010_snapshot.json",
+      "0011_snapshot.json",
+      "0012_snapshot.json",
+      "0013_snapshot.json",
+      "0014_snapshot.json",
+      "0015_snapshot.json",
+      "0016_snapshot.json",
+      "0017_snapshot.json",
+      "0018_snapshot.json",
+      "0019_snapshot.json",
+      "0020_snapshot.json",
+      "0021_snapshot.json",
+      "_journal.json"
+    ],
+    "apps/app/src": [
+      "app",
+      "components",
+      "data",
+      "drizzle",
+      "features",
+      "hooks",
+      "lib",
+      "middleware.ts",
+      "redux",
+      "server",
+      "types",
+      "zodSchema"
+    ],
+    "apps/app/src/redux": [
+      "slices",
+      "store.ts"
+    ],
+    "apps/app/src/lib": [
+      "r2.ts",
+      "utils.ts"
+    ],
+    "apps/app/src/hooks": [
+      "useDeleteOpenTrade.ts",
+      "useDeleteTrade.ts"
+    ],
+    "apps/app/src/drizzle": [
+      "db.ts",
+      "schema.ts"
+    ],
+    "apps/app/src/zodSchema": [
+      "schema.ts"
+    ],
+    "apps/app/src/types": [
+      "dbSchema.types.ts",
+      "index.d.ts",
+      "strategies.types.ts",
+      "stripe.types.ts",
+      "tradeAI.types.ts"
+    ],
+    "apps/app/src/components": [
+      "CustomButton.tsx",
+      "CustomLoading.tsx",
+      "Filtering.tsx",
+      "MobileNavigation.tsx",
+      "ReduxProvider.tsx",
+      "StatsGridPageOne.tsx",
+      "StatsGridPageTwo.tsx",
+      "admin",
+      "calendar",
+      "feedback",
+      "history",
+      "home-page",
+      "journal",
+      "private-layout",
+      "statistics",
+      "strategies",
+      "tokens",
+      "trade-dialog",
+      "tradeAI",
+      "ui"
+    ],
+    "apps/app/src/app": [
+      "(auth)",
+      "api",
+      "favicon.ico",
+      "fonts",
+      "globals.css",
+      "layout.tsx",
+      "loading.tsx",
+      "page.tsx",
+      "private",
+      "sso-callback"
+    ],
+    "apps/app/src/data": [
+      "data.ts"
+    ],
+    "apps/app/src/features": [
+      "ai",
+      "archive",
+      "calendar",
+      "history",
+      "odometer",
+      "statistics",
+      "typing-text"
+    ],
+    "apps/app/src/server": [
+      "actions",
+      "billing.ts"
+    ],
+    "apps/app/tests": [
+      "stage2"
+    ],
+    "apps/app/tests/stage2": [
+      "archive.idor.test.ts",
+      "credit-minting.test.ts",
+      "stripe-webhook.test.ts"
+    ],
+    "apps/app/public": [
+      "ai-video.mp4",
+      "ai-video.webm",
+      "background-bars-colors.png",
+      "calendar-mobile.png",
+      "calendar.png",
+      "fake-user-images",
+      "feedback",
+      "intro",
+      "logo-watermark-pressed.png",
+      "logo-watermark.png",
+      "logo.svg",
+      "main-logo.png",
+      "mobile-calendar.png",
+      "nav",
+      "scroll-parallax-1.png",
+      "scroll-parallax-2.png",
+      "scroll-parallax-3.png",
+      "scroll-parallax-4.png",
+      "scroll-parallax-5.png",
+      "scroll-parallax-6.png",
+      "start-page-mobile-view.png",
+      "statistics-page-one-mobile.png",
+      "statistics-page-two-mobile.png",
+      "your-gradient.jpg"
+    ],
+    "apps/app/public/feedback": [
+      "avatar-1.webp",
+      "avatar-2.webp",
+      "avatar-3.webp",
+      "avatar-4.webp",
+      "avatar-5.webp"
+    ],
+    "apps/app/public/intro": [
+      "intro-ai-report.webm",
+      "intro-calendar.svg",
+      "intro-history.png",
+      "intro-journal.svg",
+      "intro-open-close-position.webm",
+      "intro-strategies.png",
+      "intro-trade-with-strategy.png"
+    ],
+    "apps/app/public/nav": [
+      "test-1.png",
+      "test-2.png",
+      "test-3.png"
+    ],
+    "apps/app/public/fake-user-images": [
+      "fake-user-1.jpeg",
+      "fake-user-10.jpeg",
+      "fake-user-11.jpeg",
+      "fake-user-12.jpeg",
+      "fake-user-13.jpeg",
+      "fake-user-14.jpeg",
+      "fake-user-15.jpeg",
+      "fake-user-2.jpeg",
+      "fake-user-3.jpeg",
+      "fake-user-4.jpeg",
+      "fake-user-5.jpeg",
+      "fake-user-6.jpeg",
+      "fake-user-7.jpeg",
+      "fake-user-8.jpeg",
+      "fake-user-9.jpeg"
+    ],
+    ".codex": [],
+    "docs": [
+      "README.md",
+      "ROADMAP.md",
+      "adr",
+      "architecture-decisions.md",
+      "architecture.md",
+      "m3-corpus",
+      "specs"
+    ],
+    "docs/m3-corpus": [
+      "adrs",
+      "architecture",
+      "feature-flags-spec.md",
+      "features",
+      "incidents",
+      "runbooks"
+    ],
+    "docs/m3-corpus/architecture": [
+      "auth-flow.md",
+      "db-schema.md",
+      "r2-storage.md",
+      "state-management.md",
+      "turborepo.md"
+    ],
+    "docs/m3-corpus/incidents": [
+      "incident-001.md",
+      "incident-0010.md",
+      "incident-002.md",
+      "incident-003.md",
+      "incident-004.md",
+      "incident-005.md",
+      "incident-006.md",
+      "incident-007.md",
+      "incident-008.md",
+      "incident-009.md"
+    ],
+    "docs/m3-corpus/adrs": [
+      "adr-001.md",
+      "adr-0010.md",
+      "adr-002.md",
+      "adr-003.md",
+      "adr-004.md",
+      "adr-005.md",
+      "adr-006.md",
+      "adr-007.md",
+      "adr-008.md",
+      "adr-009.md"
+    ],
+    "docs/m3-corpus/features": [
+      "ai-ocr.md",
+      "billing-stripe.md",
+      "journal-engine.md",
+      "mentor-views.md",
+      "statistics-mae-mfe.md"
+    ],
+    "docs/m3-corpus/runbooks": [
+      "asset-optimization.md",
+      "auth-troubleshooting.md",
+      "db-migrations.md"
+    ],
+    "docs/specs": [
+      "feature-flags-mcp-spec.md",
+      "rag-spec.md"
+    ],
+    "docs/adr": [
+      "0001-use-supabase-and-drizzle.md",
+      "0002-use-cloudflare-r2-with-aws4fetch.md",
+      "0003-turborepo-monorepo-structure.md"
+    ],
+    "mcps": [
+      "feature-flags",
+      "rag",
+      "search-docs"
+    ],
+    "mcps/feature-flags": [
+      "package.json",
+      "src",
+      "tsconfig.json"
+    ],
+    "mcps/feature-flags/src": [
+      "http.ts",
+      "index.ts"
+    ],
+    "mcps/search-docs": [
+      "package.json",
+      "src",
+      "tsconfig.json"
+    ],
+    "mcps/search-docs/src": [
+      "index.ts"
+    ],
+    "mcps/rag": [
+      "__tests__",
+      "chunks.jsonl",
+      "ingest.ts",
+      "package.json",
+      "query.ts"
+    ],
+    "mcps/rag/__tests__": [
+      "rag.test.ts"
+    ],
+    "packages": [
+      "api-types",
+      "feature-flags-core"
+    ],
+    "packages/api-types": [
+      "package.json",
+      "src",
+      "tsconfig.json"
+    ],
+    "packages/api-types/src": [
+      "index.ts"
+    ],
+    "packages/feature-flags-core": [
+      "package.json",
+      "src",
+      "tsconfig.json"
+    ],
+    "packages/feature-flags-core/src": [
+      "dependency-graph.test.ts",
+      "index.ts"
+    ],
+    "data": [
+      "feature-flags"
+    ],
+    "data/feature-flags": [
+      "features.json"
+    ]
+  },
+  "notes": {
+    "stack_correction": "Despite the M6 homework examples being Python/Mongo/proshop_mern, THIS fork is a TypeScript/Next.js/Postgres monorepo. No Python services. Tests use Vitest.",
+    "rls": "Supabase RLS is disabled because Clerk does not populate auth.uid(); authz is enforced purely in app code (ADR-0001 consequence, promoted to proposed ADR-0004).",
+    "m3_corpus": "docs/m3-corpus/adrs are Lorem-ipsum placeholders (corpus padding), not real decisions. Real ADRs are docs/adr/0001-0003.",
+    "audit": "See homework/M6/stage3-living-docs/docs-audit.md for the full ✅/🔄/📦/❌ verdict per docs item."
+  },
+  "last_updated": "2026-05-25T19:55:49.377628+00:00"
+}
