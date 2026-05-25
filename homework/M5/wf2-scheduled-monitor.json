@@ -1,0 +1,231 @@
+{
+  "name": "wf2-scheduled-monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "minutes", "minutesInterval": 1 }]
+        }
+      },
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = '/data/m5/logs.json';\nlet data = [];\ntry {\n  data = JSON.parse(fs.readFileSync(path, 'utf-8'));\n} catch (e) {\n  return [{ json: { error: e.message, error_rate: 0, total: 0, errors: 0, feature_id: 'search_v2' } }];\n}\nconst now = Date.now();\nconst windowMs = 60 * 1000;\nconst recent = data.filter(e => (now - new Date(e.timestamp).getTime()) < windowMs);\nconst total = recent.length;\nconst errors = recent.filter(e => e.status === 'error').length;\nreturn [{ json: { feature_id: 'search_v2', error_rate: total > 0 ? errors / total : 0, total, errors } }];\n"
+      },
+      "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "name": "Read & Analyze Logs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:7733/tools/get_feature_info",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"feature_id\": \"{{ $json.feature_id }}\"\n}",
+        "options": {}
+      },
+      "id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "name": "Get Feature Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "m3-wrapper-bearer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    feature_id: $('Read & Analyze Logs').item.json.feature_id,\n    error_rate: $('Read & Analyze Logs').item.json.error_rate,\n    total: $('Read & Analyze Logs').item.json.total,\n    current_status: $('Get Feature Status').item.json.status,\n  }\n}];\n"
+      },
+      "id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      "name": "Merge Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "d1",
+                    "leftValue": "={{ $json.error_rate }}",
+                    "rightValue": 0.05,
+                    "operator": { "type": "number", "operation": "gt" }
+                  },
+                  {
+                    "id": "d2",
+                    "leftValue": "={{ $json.current_status }}",
+                    "rightValue": "Disabled",
+                    "operator": { "type": "string", "operation": "notEquals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "deactivate"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r1",
+                    "leftValue": "={{ $json.error_rate }}",
+                    "rightValue": 0.01,
+                    "operator": { "type": "number", "operation": "lt" }
+                  },
+                  {
+                    "id": "r2",
+                    "leftValue": "={{ $json.current_status }}",
+                    "rightValue": "Disabled",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "reenable"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra" }
+      },
+      "id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      "name": "Decision",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1160, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "s1", "name": "decision", "type": "string", "value": "deactivate" },
+            { "id": "s2", "name": "feature_id", "type": "string", "value": "={{ $json.feature_id }}" },
+            { "id": "s3", "name": "error_rate", "type": "number", "value": "={{ $json.error_rate }}" },
+            { "id": "s4", "name": "current_status", "type": "string", "value": "={{ $json.current_status }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ffffffff-ffff-4fff-8fff-ffffffffffff",
+      "name": "Set Decision deactivate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1400, 160]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "s5", "name": "decision", "type": "string", "value": "reenable" },
+            { "id": "s6", "name": "feature_id", "type": "string", "value": "={{ $json.feature_id }}" },
+            { "id": "s7", "name": "error_rate", "type": "number", "value": "={{ $json.error_rate }}" },
+            { "id": "s8", "name": "current_status", "type": "string", "value": "={{ $json.current_status }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "11112222-1111-4111-8111-222222222222",
+      "name": "Set Decision reenable",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {},
+      "id": "22223333-2222-4222-8222-333333333333",
+      "name": "No-Op (within threshold)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1400, 440]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "=Goal:\nRegister an incident or recovery for feature {{ $json.feature_id }}.\nCurrent error_rate: {{ $json.error_rate }} (deactivate threshold 5%, re-enable threshold 1%).\nCurrent status: {{ $json.current_status }}.\nDecision from upstream Switch: {{ $json.decision }} (deactivate | reenable).\n\nContext:\n- The decision is already made deterministically upstream. Your job is only to execute it via MCP.\n- Available tools: get_feature_info, set_feature_state.\n- Do NOT re-decide. Algorithm-before-AI — guards live outside the model.\n\nAction:\n1. Call get_feature_info({{ $json.feature_id }}) to re-read state (protects against Switch↔Agent races).\n2. If decision=\"deactivate\":\n   - If status == \"Disabled\" → action_taken=\"no_op\", reason=\"already_disabled\".\n   - Else → set_feature_state(state=\"Disabled\") → re-read.\n3. If decision=\"reenable\":\n   - If status != \"Disabled\" → action_taken=\"no_op\", reason=\"already_enabled\".\n   - Else → set_feature_state(state=\"Enabled\") → re-read.\n4. Build a short Ukrainian alert_message (one line). Templates:\n   - deactivated: \"🚨 Feature {name} деактивована: error_rate {X}% перевищив поріг 5%.\"\n   - reenabled:   \"✅ Feature {name} відновлена: error_rate {X}% впав нижче 1%.\"\n   - no_op:       \"ℹ️ Feature {name} — без змін (error_rate {X}%, статус {S}).\"\n\nOutput (strict JSON, matches the configured schema):\n{\n  \"action_taken\": \"deactivated\" | \"reenabled\" | \"no_op\" | \"error\",\n  \"previous_state\": object | null,\n  \"new_state\": object | null,\n  \"alert_message\": string,\n  \"error_rate_percent\": number,\n  \"threshold_used\": number,\n  \"reason\": string | null\n}\n\nConstraints:\n- Do NOT call set_feature_state if the current status already matches the target.\n- On MCP error, action_taken=\"error\" with reason carrying the tool's message.",
+          "maxIterations": 3,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "33334444-3333-4333-8333-444444444444",
+      "name": "Monitor Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [1660, 230]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $json.output?.alert_message || $json.alert_message || 'M5: alert payload missing alert_message' }}",
+        "additionalFields": {}
+      },
+      "id": "44445555-4444-4444-8444-555555555555",
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1920, 230],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "telegram-m5-alerts"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{ "node": "Read & Analyze Logs", "type": "main", "index": 0 }]]
+    },
+    "Read & Analyze Logs": {
+      "main": [[{ "node": "Get Feature Status", "type": "main", "index": 0 }]]
+    },
+    "Get Feature Status": {
+      "main": [[{ "node": "Merge Data", "type": "main", "index": 0 }]]
+    },
+    "Merge Data": {
+      "main": [[{ "node": "Decision", "type": "main", "index": 0 }]]
+    },
+    "Decision": {
+      "main": [
+        [{ "node": "Set Decision deactivate", "type": "main", "index": 0 }],
+        [{ "node": "Set Decision reenable", "type": "main", "index": 0 }],
+        [{ "node": "No-Op (within threshold)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Set Decision deactivate": {
+      "main": [[{ "node": "Monitor Agent", "type": "main", "index": 0 }]]
+    },
+    "Set Decision reenable": {
+      "main": [[{ "node": "Monitor Agent", "type": "main", "index": 0 }]]
+    },
+    "Monitor Agent": {
+      "main": [[{ "node": "Send Alert", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": false }
+}
