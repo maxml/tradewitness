@@ -178,7 +178,7 @@ Full compose details: `docs/01-setup.md` §1.1.
 |---|---|
 | 3.1 | Header Auth credential `n8n-feature-control-api-key` with header `X-API-Key` and the value of `N8N_WEBHOOK_API_KEY`. |
 | 3.2 | Telegram API credential `telegram-m5-alerts` with `TELEGRAM_BOT_TOKEN`. Test connection. |
-| 3.3 | Chat Model credential (Anthropic / OpenAI / OpenRouter) — pick one model. |
+| 3.3 | **OpenRouter API** credential. Free model in the Chat Model sub-node — see `n8n-import-notes.md` §3.1 (recommended: `google/gemini-2.0-flash-exp:free`). |
 | 3.4 | Bearer Token credential for the M3 MCP (value `M3_MCP_API_KEY`). |
 
 **Verify:** each credential's "Test" passes inside the n8n UI.

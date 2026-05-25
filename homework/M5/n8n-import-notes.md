@@ -30,7 +30,7 @@ That's expected. Fix in this order.
 | `n8n-feature-control-api-key` | Header Auth | header `X-API-Key`, value = `N8N_WEBHOOK_API_KEY` from `homework/M5/.env.local` | WF1 Webhook |
 | `m3-wrapper-bearer` | Header Auth | header `Authorization`, value `Bearer <M3_MCP_API_KEY>` | WF2 Get Feature Status + all M3 tool nodes |
 | `telegram-m5-alerts` | Telegram API | access token = `TELEGRAM_BOT_TOKEN` | WF2 Send Alert |
-| `Anthropic API` (or OpenAI/Gemini/OpenRouter) | the model's native cred type | your model API key | Both AI Agents |
+| `OpenRouter API` | OpenRouter credential | your OpenRouter API key | Both AI Agents (free model — see §3.1) |
 
 After creating them, open each red-dot node and select the credential
 from the dropdown.
@@ -40,11 +40,22 @@ from the dropdown.
 Click the AI Agent node, then use the `+` affordances around it to add
 each of the following.
 
-### 3.1 Chat Model
-Add → Sub-nodes → AI → **Anthropic Chat Model** (or your choice).
-- Model: `claude-sonnet-4-20250514` or current Sonnet/Opus.
+### 3.1 Chat Model — OpenRouter
+Add → Sub-nodes → AI → **OpenRouter Chat Model**.
+- Credential: `OpenRouter API`.
+- Model: **`openai/gpt-4o-mini`** — this is the model the live workflows
+  ship with and the only one verified to call tools deterministically on
+  every run during M5 testing.
 - Connect: `ai_languageModel` → AI Agent (this happens automatically
   when you add it via the `+` slot on the AI Agent's bottom).
+
+> Models we tried and rejected during M5:
+> - `meta-llama/llama-3.3-70b-instruct:free` and
+>   `google/gemini-2.0-flash-exp:free` — daily quota / model-not-found.
+> - `google/gemini-2.0-flash-001` — hallucinated tool results (returned
+>   `action_taken: deactivated` without actually calling
+>   `set_feature_state`). Switched to `openai/gpt-4o-mini` and the
+>   problem disappeared. See `review.md` §"Model swap".
 
 ### 3.2 Memory: Window Buffer
 Add → Sub-nodes → AI → **Window Buffer Memory**.
@@ -69,62 +80,41 @@ For each tool node:
 - Description: write what the tool does (the agent picks based on description).
 - Connect: `ai_tool` → AI Agent.
 
-### 3.4 Structured Output Parser
-Add → Sub-nodes → AI → **Structured Output Parser**.
-- `schemaType`: `manual`
-- `inputSchema` (paste verbatim):
-  ```json
-  {
-    "type": "object",
-    "required": ["success", "message"],
-    "properties": {
-      "success": { "type": "boolean" },
-      "message": { "type": "string" },
-      "current_state": {
-        "type": ["object", "null"],
-        "properties": {
-          "name": { "type": "string" },
-          "status": { "type": "string", "enum": ["Enabled", "Disabled", "Testing"] },
-          "traffic_percentage": { "type": "number" },
-          "depends_on": { "type": "array", "items": { "type": "string" } },
-          "last_modified": { "type": "string" }
-        }
-      },
-      "rejected_at": { "type": ["string", "null"] }
-    }
-  }
-  ```
-- Connect: `ai_outputParser` → AI Agent.
+### 3.4 Output parsing — **not** via Structured Output Parser sub-node
+
+Earlier draft used a Structured Output Parser. We removed it because on
+the models we ended up using (Llama-3.3, Gemini Flash, gpt-4o-mini) the
+parser caused the agent to loop or to wrap output in markdown code
+fences. Instead, **WF1 strips fences inside the Respond 200 node** —
+the body expression does a regex replace of ` ```json … ``` ` before
+sending the response back to the webhook caller.
+
+If you need to inspect the exact expression, open `Respond 200` in the
+UI — it's a small JS snippet on the `responseBody` field.
 
 ## 4. Sub-nodes for **WF2 → Monitor Agent**
 
 Same flow as §3 but:
 
-### 4.1 Chat Model — same as WF1.
+### 4.1 Chat Model — OpenRouter, same model as WF1 (§3.1).
 ### 4.2 Memory — **none**. The cron tick is stateless; attaching memory wastes tokens.
 ### 4.3 Tools — 2 HTTP Request Tools:
 - `get_feature_info` — same as WF1 §3.3.
 - `set_feature_state` — same as WF1 §3.3.
 - (`adjust_traffic_rollout` not needed.)
 
-### 4.4 Structured Output Parser
-- `schemaType`: `manual`
-- `inputSchema`:
-  ```json
-  {
-    "type": "object",
-    "required": ["action_taken", "alert_message"],
-    "properties": {
-      "action_taken": { "type": "string", "enum": ["deactivated", "reenabled", "no_op", "error"] },
-      "previous_state": { "type": ["object", "null"] },
-      "new_state": { "type": ["object", "null"] },
-      "alert_message": { "type": "string" },
-      "error_rate_percent": { "type": "number" },
-      "threshold_used": { "type": "number" },
-      "reason": { "type": ["string", "null"] }
-    }
-  }
-  ```
+### 4.4 Output parsing — **Parse Agent Output** (Set node), no parser sub-node
+
+Same reasoning as WF1 §3.4. Between `Monitor Agent` and `Send Alert`
+there is a **Set** node called `Parse Agent Output` that extracts the
+JSON object out of whatever the agent emitted (raw JSON, fenced JSON,
+or JSON with leading prose). The extraction logic is `indexOf('{')` to
+`lastIndexOf('}')`, then `JSON.parse`, then expose
+`alert_message` to the Telegram node.
+
+> History: we first tried a regex on the raw text, but on some agent
+> outputs that returned `null` and Telegram received the string `null`.
+> The substring approach is dumber but never returns null.
 
 ## 5. Activate
 
@@ -156,3 +146,13 @@ curl -s -X POST http://localhost:5678/webhook/feature-control \
   `docs/01-setup.md` §1.7. Most common cause: M3 wrapper bound to
   `127.0.0.1` instead of `0.0.0.0` (it defaults to `0.0.0.0` in our
   http.ts), or compose started without `--env-file`.
+- WF2 uses **Set**, not Code, for both `Merge Data` and `Parse Agent
+  Output`. Reason: in our n8n container a Code node intermittently
+  crashed the task runner with
+  `InternalTaskRunnerDisconnectAnalyzer.toDisconnectError` — Set runs
+  in-process, no separate runner.
+- WF2 Telegram node has `chatId` **hardcoded** to the M5 test chat
+  (`26462215`). Using `={{ $env.TELEGRAM_CHAT_ID }}` is rejected by
+  n8n's default env-var policy and is more trouble than it's worth.
+- `Monitor Agent` and `AI Agent` both run with `maxIterations: 6`. With
+  3 the agent occasionally stopped before emitting the final JSON.

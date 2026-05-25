@@ -4,14 +4,22 @@
     {
       "parameters": {
         "rule": {
-          "interval": [{ "field": "minutes", "minutesInterval": 1 }]
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
         }
       },
       "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "name": "Schedule Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [200, 300]
+      "position": [
+        200,
+        300
+      ]
     },
     {
       "parameters": {
@@ -21,7 +29,10 @@
       "name": "Read & Analyze Logs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [440, 300]
+      "position": [
+        440,
+        300
+      ]
     },
     {
       "parameters": {
@@ -38,23 +49,57 @@
       "name": "Get Feature Status",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 300],
+      "position": [
+        680,
+        300
+      ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "REPLACE_ME",
+          "id": "r7KAB9qrrxTAXvcA",
           "name": "m3-wrapper-bearer"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "return [{\n  json: {\n    feature_id: $('Read & Analyze Logs').item.json.feature_id,\n    error_rate: $('Read & Analyze Logs').item.json.error_rate,\n    total: $('Read & Analyze Logs').item.json.total,\n    current_status: $('Get Feature Status').item.json.status,\n  }\n}];\n"
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m1",
+              "name": "feature_id",
+              "type": "string",
+              "value": "={{ $('Read & Analyze Logs').item.json.feature_id }}"
+            },
+            {
+              "id": "m2",
+              "name": "error_rate",
+              "type": "number",
+              "value": "={{ $('Read & Analyze Logs').item.json.error_rate }}"
+            },
+            {
+              "id": "m3",
+              "name": "total",
+              "type": "number",
+              "value": "={{ $('Read & Analyze Logs').item.json.total }}"
+            },
+            {
+              "id": "m4",
+              "name": "current_status",
+              "type": "string",
+              "value": "={{ $json.status }}"
+            }
+          ]
+        },
+        "options": {}
       },
-      "id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-      "name": "Merge Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [920, 300]
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        920,
+        300
+      ],
+      "id": "merge-as-set",
+      "name": "Merge Data"
     },
     {
       "parameters": {
@@ -63,20 +108,31 @@
           "values": [
             {
               "conditions": {
-                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
                 "combinator": "and",
                 "conditions": [
                   {
                     "id": "d1",
                     "leftValue": "={{ $json.error_rate }}",
                     "rightValue": 0.05,
-                    "operator": { "type": "number", "operation": "gt" }
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
                   },
                   {
                     "id": "d2",
                     "leftValue": "={{ $json.current_status }}",
                     "rightValue": "Disabled",
-                    "operator": { "type": "string", "operation": "notEquals" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
                   }
                 ]
               },
@@ -85,20 +141,31 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
                 "combinator": "and",
                 "conditions": [
                   {
                     "id": "r1",
                     "leftValue": "={{ $json.error_rate }}",
                     "rightValue": 0.01,
-                    "operator": { "type": "number", "operation": "lt" }
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
                   },
                   {
                     "id": "r2",
                     "leftValue": "={{ $json.current_status }}",
                     "rightValue": "Disabled",
-                    "operator": { "type": "string", "operation": "equals" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
                   }
                 ]
               },
@@ -107,22 +174,47 @@
             }
           ]
         },
-        "options": { "fallbackOutput": "extra" }
+        "options": {
+          "fallbackOutput": "extra"
+        }
       },
       "id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
       "name": "Decision",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
-      "position": [1160, 300]
+      "position": [
+        1160,
+        300
+      ]
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "s1", "name": "decision", "type": "string", "value": "deactivate" },
-            { "id": "s2", "name": "feature_id", "type": "string", "value": "={{ $json.feature_id }}" },
-            { "id": "s3", "name": "error_rate", "type": "number", "value": "={{ $json.error_rate }}" },
-            { "id": "s4", "name": "current_status", "type": "string", "value": "={{ $json.current_status }}" }
+            {
+              "id": "s1",
+              "name": "decision",
+              "type": "string",
+              "value": "deactivate"
+            },
+            {
+              "id": "s2",
+              "name": "feature_id",
+              "type": "string",
+              "value": "={{ $json.feature_id }}"
+            },
+            {
+              "id": "s3",
+              "name": "error_rate",
+              "type": "number",
+              "value": "={{ $json.error_rate }}"
+            },
+            {
+              "id": "s4",
+              "name": "current_status",
+              "type": "string",
+              "value": "={{ $json.current_status }}"
+            }
           ]
         },
         "options": {}
@@ -131,16 +223,39 @@
       "name": "Set Decision deactivate",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [1400, 160]
+      "position": [
+        1400,
+        160
+      ]
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "s5", "name": "decision", "type": "string", "value": "reenable" },
-            { "id": "s6", "name": "feature_id", "type": "string", "value": "={{ $json.feature_id }}" },
-            { "id": "s7", "name": "error_rate", "type": "number", "value": "={{ $json.error_rate }}" },
-            { "id": "s8", "name": "current_status", "type": "string", "value": "={{ $json.current_status }}" }
+            {
+              "id": "s5",
+              "name": "decision",
+              "type": "string",
+              "value": "reenable"
+            },
+            {
+              "id": "s6",
+              "name": "feature_id",
+              "type": "string",
+              "value": "={{ $json.feature_id }}"
+            },
+            {
+              "id": "s7",
+              "name": "error_rate",
+              "type": "number",
+              "value": "={{ $json.error_rate }}"
+            },
+            {
+              "id": "s8",
+              "name": "current_status",
+              "type": "string",
+              "value": "={{ $json.current_status }}"
+            }
           ]
         },
         "options": {}
@@ -149,7 +264,10 @@
       "name": "Set Decision reenable",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [1400, 300]
+      "position": [
+        1400,
+        300
+      ]
     },
     {
       "parameters": {},
@@ -157,15 +275,18 @@
       "name": "No-Op (within threshold)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [1400, 440]
+      "position": [
+        1400,
+        440
+      ]
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ JSON.stringify($json) }}",
         "options": {
-          "systemMessage": "=Goal:\nRegister an incident or recovery for feature {{ $json.feature_id }}.\nCurrent error_rate: {{ $json.error_rate }} (deactivate threshold 5%, re-enable threshold 1%).\nCurrent status: {{ $json.current_status }}.\nDecision from upstream Switch: {{ $json.decision }} (deactivate | reenable).\n\nContext:\n- The decision is already made deterministically upstream. Your job is only to execute it via MCP.\n- Available tools: get_feature_info, set_feature_state.\n- Do NOT re-decide. Algorithm-before-AI — guards live outside the model.\n\nAction:\n1. Call get_feature_info({{ $json.feature_id }}) to re-read state (protects against Switch↔Agent races).\n2. If decision=\"deactivate\":\n   - If status == \"Disabled\" → action_taken=\"no_op\", reason=\"already_disabled\".\n   - Else → set_feature_state(state=\"Disabled\") → re-read.\n3. If decision=\"reenable\":\n   - If status != \"Disabled\" → action_taken=\"no_op\", reason=\"already_enabled\".\n   - Else → set_feature_state(state=\"Enabled\") → re-read.\n4. Build a short Ukrainian alert_message (one line). Templates:\n   - deactivated: \"🚨 Feature {name} деактивована: error_rate {X}% перевищив поріг 5%.\"\n   - reenabled:   \"✅ Feature {name} відновлена: error_rate {X}% впав нижче 1%.\"\n   - no_op:       \"ℹ️ Feature {name} — без змін (error_rate {X}%, статус {S}).\"\n\nOutput (strict JSON, matches the configured schema):\n{\n  \"action_taken\": \"deactivated\" | \"reenabled\" | \"no_op\" | \"error\",\n  \"previous_state\": object | null,\n  \"new_state\": object | null,\n  \"alert_message\": string,\n  \"error_rate_percent\": number,\n  \"threshold_used\": number,\n  \"reason\": string | null\n}\n\nConstraints:\n- Do NOT call set_feature_state if the current status already matches the target.\n- On MCP error, action_taken=\"error\" with reason carrying the tool's message.",
-          "maxIterations": 3,
+          "systemMessage": "=Goal:\nExecute the feature-flag decision from upstream Switch for {{ $json.feature_id }}.\n\nDecision from upstream: {{ $json.decision }} (deactivate | reenable).\nCurrent status (from Get Feature Status node): {{ $json.current_status }}.\nCurrent error_rate: {{ $json.error_rate }}.\n\nAvailable tools (you MUST use them; never fabricate):\n- get_feature_info(feature_id) \u2014 re-reads state\n- set_feature_state(feature_id, state) \u2014 mutates status\n\nEXECUTION RULES (mandatory, no exceptions):\n1. Your FIRST action MUST be a tool call to get_feature_info to confirm current state.\n2. If mutation is needed (per the rules below), you MUST call set_feature_state.\n3. After mutation, you MUST call get_feature_info AGAIN to read the new state.\n4. The \"new_state\" field MUST be the literal object returned by the LAST get_feature_info call.\n5. If you skip any required tool call, your output is INVALID.\n\nMutation rules:\n- decision=\"deactivate\" + current status != \"Disabled\" \u2192 set_feature_state(state=\"Disabled\").\n- decision=\"deactivate\" + current status == \"Disabled\" \u2192 no mutation; action_taken=\"no_op\", reason=\"already_disabled\".\n- decision=\"reenable\" + current status == \"Disabled\" \u2192 set_feature_state(state=\"Enabled\").\n- decision=\"reenable\" + current status != \"Disabled\" \u2192 no mutation; action_taken=\"no_op\", reason=\"already_enabled\".\n\nAlert message (Ukrainian, one line):\n- deactivated: \"\ud83d\udea8 Feature search_v2 \u0434\u0435\u0430\u043a\u0442\u0438\u0432\u043e\u0432\u0430\u043d\u0430: error_rate X% \u043f\u0435\u0440\u0435\u0432\u0438\u0449\u0438\u0432 \u043f\u043e\u0440\u0456\u0433 5%.\"\n- reenabled:   \"\u2705 Feature search_v2 \u0432\u0456\u0434\u043d\u043e\u0432\u043b\u0435\u043d\u0430: error_rate X% \u0432\u043f\u0430\u0432 \u043d\u0438\u0436\u0447\u0435 1%.\"\n- no_op:       \"\u2139\ufe0f Feature search_v2 \u2014 \u0431\u0435\u0437 \u0437\u043c\u0456\u043d (error_rate X%, \u0441\u0442\u0430\u0442\u0443\u0441 S).\"\n\nOutput (strict JSON):\n{\n  \"action_taken\": \"deactivated\" | \"reenabled\" | \"no_op\" | \"error\",\n  \"previous_state\": <object from the FIRST get_feature_info> | null,\n  \"new_state\": <object from the LAST get_feature_info> | null,\n  \"alert_message\": string,\n  \"error_rate_percent\": number,\n  \"threshold_used\": number,\n  \"reason\": string | null\n}\n\nFORMAT:\n- Return JSON only. First char `{`, last char `}`.\n- DO NOT wrap in markdown code fences.",
+          "maxIterations": 6,
           "returnIntermediateSteps": true
         }
       },
@@ -173,59 +294,298 @@
       "name": "Monitor Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
-      "position": [1660, 230]
+      "position": [
+        1660,
+        230
+      ]
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
-        "text": "={{ $json.output?.alert_message || $json.alert_message || 'M5: alert payload missing alert_message' }}",
+        "chatId": "26462215",
+        "text": "={{ $json.alert_message || 'M5: no alert_message in agent output' }}",
         "additionalFields": {}
       },
       "id": "44445555-4444-4444-8444-555555555555",
       "name": "Send Alert",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1920, 230],
+      "position": [
+        1920,
+        230
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "REPLACE_ME",
+          "id": "qLcd7uYkSCuIhToj",
           "name": "telegram-m5-alerts"
         }
+      },
+      "webhookId": "b076ce0c-aafe-4562-84a6-7467344c6019"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        460
+      ],
+      "id": "auto-wf2-chat",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "RmKOYq6gEEV6HEpy",
+          "name": "openrouter-m5"
+        }
       }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Read the current feature flag by feature_id. Call this to re-read state before deciding whether to mutate. Inputs: feature_id (string).",
+        "method": "POST",
+        "url": "http://host.docker.internal:7733/tools/get_feature_info",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"feature_id\": \"{{ $fromAI('feature_id', 'exact feature_id like search_v2', 'string') }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1660,
+        460
+      ],
+      "id": "auto-wf2-get_feature_info",
+      "name": "get_feature_info",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "r7KAB9qrrxTAXvcA",
+          "name": "m3-wrapper-bearer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Change feature flag status. Only call when current status does NOT already match the target. Inputs: feature_id (string), state (Enabled | Disabled | Testing).",
+        "method": "POST",
+        "url": "http://host.docker.internal:7733/tools/set_feature_state",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"feature_id\": \"{{ $fromAI('feature_id', 'exact feature_id like search_v2', 'string') }}\",\n  \"state\": \"{{ $fromAI('state', 'one of Enabled, Disabled, Testing', 'string') }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1840,
+        460
+      ],
+      "id": "auto-wf2-set_feature_state",
+      "name": "set_feature_state",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "r7KAB9qrrxTAXvcA",
+          "name": "m3-wrapper-bearer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "p1",
+              "name": "raw",
+              "type": "string",
+              "value": "={{ String($json.output ?? '') }}"
+            },
+            {
+              "id": "p2",
+              "name": "clean",
+              "type": "string",
+              "value": "={{ (() => { const r = String($json.output ?? ''); const i = r.indexOf('{'); const j = r.lastIndexOf('}'); return (i>=0 && j>i) ? r.slice(i,j+1) : r; })() }}"
+            },
+            {
+              "id": "p3",
+              "name": "parsed",
+              "type": "object",
+              "value": "={{ (() => { const r = String($json.output ?? ''); const i = r.indexOf('{'); const j = r.lastIndexOf('}'); if (i<0||j<=i) return {}; try { return JSON.parse(r.slice(i,j+1)); } catch { return {}; } })() }}"
+            },
+            {
+              "id": "p4",
+              "name": "alert_message",
+              "type": "string",
+              "value": "={{ (() => { const r = String($json.output ?? ''); const i = r.indexOf('{'); const j = r.lastIndexOf('}'); if (i<0||j<=i) return String($json.output ?? ''); try { return JSON.parse(r.slice(i,j+1)).alert_message || ''; } catch { return ''; } })() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1860,
+        230
+      ],
+      "id": "parse-agent-out",
+      "name": "Parse Agent Output"
     }
   ],
   "connections": {
     "Schedule Trigger": {
-      "main": [[{ "node": "Read & Analyze Logs", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Read & Analyze Logs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Read & Analyze Logs": {
-      "main": [[{ "node": "Get Feature Status", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Get Feature Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Get Feature Status": {
-      "main": [[{ "node": "Merge Data", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Merge Data": {
-      "main": [[{ "node": "Decision", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Decision": {
       "main": [
-        [{ "node": "Set Decision deactivate", "type": "main", "index": 0 }],
-        [{ "node": "Set Decision reenable", "type": "main", "index": 0 }],
-        [{ "node": "No-Op (within threshold)", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Set Decision deactivate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Decision reenable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No-Op (within threshold)",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Set Decision deactivate": {
-      "main": [[{ "node": "Monitor Agent", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Monitor Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Set Decision reenable": {
-      "main": [[{ "node": "Monitor Agent", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Monitor Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Monitor Agent": {
-      "main": [[{ "node": "Send Alert", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Parse Agent Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Monitor Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_feature_info": {
+      "ai_tool": [
+        [
+          {
+            "node": "Monitor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set_feature_state": {
+      "ai_tool": [
+        [
+          {
+            "node": "Monitor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Agent Output": {
+      "main": [
+        [
+          {
+            "node": "Send Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
-  "settings": { "executionOrder": "v1" },
-  "pinData": {},
-  "meta": { "templateCredsSetupCompleted": false }
+  "settings": {
+    "executionOrder": "v1"
+  }
 }

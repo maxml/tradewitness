@@ -25,12 +25,12 @@
   },
   {
     "name": "search_v2",
-    "status": "Testing",
+    "status": "Disabled",
     "traffic_percentage": 0,
     "depends_on": [
       "trade_journal_core_v1"
     ],
-    "last_modified": "2026-05-25T14:49:58.089Z"
+    "last_modified": "2026-05-25T17:22:09.975Z"
   },
   {
     "name": "strategies_v1",

@@ -8,6 +8,10 @@ build
 .env.*.local
 *.log
 n8n-data/
+
+# M5 simulator output
+homework/M5/logs.json
+homework/M5/__pycache__/
 .DS_Store
 .vercel
 package-lock.json
