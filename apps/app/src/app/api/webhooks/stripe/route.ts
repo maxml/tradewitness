@@ -17,7 +17,12 @@ export async function POST(request: Request) {
     try {
         event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
     } catch (err) {
-        return NextResponse.json({ message: "Webhook error", error: err });
+        // Fail CLOSED: an unverified payload must never reach createTransaction.
+        console.error("Stripe webhook signature verification failed:", err);
+        return NextResponse.json(
+            { message: "Webhook signature verification failed" },
+            { status: 400 }
+        );
     }
 
     // Get the ID and type

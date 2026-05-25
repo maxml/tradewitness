@@ -80,3 +80,17 @@ describe("characterization (invariant) — POST /api/webhooks/stripe", () => {
         expect(res.status).toBe(200);
     });
 });
+
+// Expected to FAIL pre-fix (implicit 200), PASS post-fix. Demonstrates fail-closed.
+describe("fix verification — webhook fails closed", () => {
+    it("returns 400 and does NOT credit when signature verification throws", async () => {
+        constructEvent.mockImplementation(() => {
+            throw new Error("No signatures found matching the expected signature for payload");
+        });
+
+        const res = await POST(fakeRequest("forged-body"));
+
+        expect(res.status).toBe(400);
+        expect(createTransaction).not.toHaveBeenCalled();
+    });
+});
