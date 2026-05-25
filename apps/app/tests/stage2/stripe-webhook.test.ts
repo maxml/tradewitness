@@ -19,7 +19,8 @@ const constructEvent = vi.fn();
 vi.mock("stripe", () => ({ default: { webhooks: { constructEvent: (...a: unknown[]) => constructEvent(...a) } } }));
 
 const createTransaction = vi.fn();
-vi.mock("@/server/actions/stripe", () => ({
+// After Finding #2's fix the webhook imports createTransaction from the non-action module.
+vi.mock("@/server/billing", () => ({
     createTransaction: (...a: unknown[]) => createTransaction(...a),
 }));
 

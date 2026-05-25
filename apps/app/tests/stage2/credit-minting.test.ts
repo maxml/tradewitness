@@ -17,12 +17,12 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const userFindFirst = vi.fn();
+const userFindFirst = vi.fn<(...a: any[]) => any>();
 const updWhere = vi.fn(() => Promise.resolve());
 const updSet = vi.fn(() => ({ where: updWhere }));
-const update = vi.fn(() => ({ set: updSet }));
+const update = vi.fn<(...a: any[]) => { set: typeof updSet }>(() => ({ set: updSet }));
 const insertValues = vi.fn(() => Promise.resolve([{ id: "txn_inserted" }]));
-const insert = vi.fn(() => ({ values: insertValues }));
+const insert = vi.fn<(...a: any[]) => { values: typeof insertValues }>(() => ({ values: insertValues }));
 
 vi.mock("@/drizzle/db", () => ({
     db: {
@@ -35,8 +35,25 @@ vi.mock("@/drizzle/db", () => ({
 const authMock = vi.fn();
 vi.mock("@clerk/nextjs/server", () => ({ auth: () => authMock() }));
 
-import { updateCredits } from "@/server/actions/user";
-import { createTransaction } from "@/server/actions/stripe";
+// for the checkoutCredits fix-verification case (and loading stripe.ts):
+const sessionsCreate = vi.fn<(...a: any[]) => Promise<{ url: string }>>(async () => ({
+    url: "https://checkout.stripe.test/c/cs_test",
+}));
+vi.mock("stripe", () => ({
+    default: class StripeMock {
+        checkout = {
+            sessions: { create: (...a: unknown[]) => sessionsCreate(...a) },
+        };
+    },
+}));
+const redirectMock = vi.fn();
+vi.mock("next/navigation", () => ({ redirect: (...a: unknown[]) => redirectMock(...a) }));
+
+// Post-fix locations: the granting functions now live in the non-action module.
+import { updateCredits, createTransaction } from "@/server/billing";
+import { checkoutCredits } from "@/server/actions/stripe";
+import * as stripeActions from "@/server/actions/stripe";
+import * as userActions from "@/server/actions/user";
 
 beforeEach(() => {
     vi.clearAllMocks();
@@ -94,5 +111,42 @@ describe("characterization (invariant) — createTransaction", () => {
             expect.objectContaining({ plan: "5", userId: "user_buyer_77c1" })
         );
         expect((res as { success?: boolean }).success).not.toBe(false);
+    });
+});
+
+// Expected to FAIL pre-fix, PASS post-fix.
+describe("fix verification — credit minting closed", () => {
+    it("checkoutCredits puts the SESSION user in metadata.buyerId, not the caller's id", async () => {
+        authMock.mockResolvedValue({ userId: "user_session_real" });
+        process.env.STRIPE_SECRET_API_KEY = "sk_test_x";
+        process.env.NEXT_PUBLIC_SERVER_URL = "https://app.tradewitness.test";
+
+        await checkoutCredits({
+            plan: "5",
+            buyerId: "user_VICTIM_injected",
+        } as unknown as Parameters<typeof checkoutCredits>[0]);
+
+        expect(sessionsCreate).toHaveBeenCalledTimes(1);
+        const arg = sessionsCreate.mock.calls[0][0] as {
+            metadata: { buyerId: string };
+        };
+        expect(arg.metadata.buyerId).toBe("user_session_real");
+    });
+
+    it("checkoutCredits refuses an unauthenticated caller", async () => {
+        authMock.mockResolvedValue({ userId: null });
+
+        const res = await checkoutCredits({
+            plan: "5",
+            buyerId: "whoever",
+        } as unknown as Parameters<typeof checkoutCredits>[0]);
+
+        expect((res as { success: boolean }).success).toBe(false);
+        expect(sessionsCreate).not.toHaveBeenCalled();
+    });
+
+    it("createTransaction and updateCredits are NOT exported as client-callable server actions", () => {
+        expect((stripeActions as Record<string, unknown>).createTransaction).toBeUndefined();
+        expect((userActions as Record<string, unknown>).updateCredits).toBeUndefined();
     });
 });

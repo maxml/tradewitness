@@ -93,54 +93,8 @@ export async function checkIfUserHasTokens(): Promise<
     }
 }
 
-const PLAN_TOKEN_MAP = {
-    "5": 20,
-    "10": 60,
-} as const;
-
-export async function updateCredits({
-    plan,
-    userId,
-}: {
-    plan: string;
-    userId: string;
-}): Promise<
-    { success: true; message: string } | { success: false; message: string }
-> {
-    try {
-        const user = await db.query.UserTable.findFirst({
-            where: eq(UserTable.id, userId),
-        });
-
-        if (!user) {
-            return { success: false, message: "User not found!" };
-        }
-
-        const updateTokensValue =
-            PLAN_TOKEN_MAP[plan as keyof typeof PLAN_TOKEN_MAP];
-        if (updateTokensValue === undefined) {
-            return { success: false, message: "Invalid plan selected" };
-        }
-
-        await db
-            .update(UserTable)
-            .set({ tokens: Number(user.tokens) + updateTokensValue })
-            .where(eq(UserTable.id, userId));
-
-        return {
-            success: true,
-            message:
-                "Thank you for your purchase! Tokens will be deposited into your account shortly.",
-        };
-    } catch (error) {
-        console.error("Error checking tokens:", error);
-        return {
-            success: false,
-            message: "An unexpected error occurred. Please try again later.",
-        };
-    }
-}
-
+// updateCredits moved to @/server/billing (server-internal, NOT a client-callable
+// server action) to close the credit-minting vector — see M6 Stage 2 fix #2.
 
 export async function completeOnboarding() {
     const { userId } = await auth();

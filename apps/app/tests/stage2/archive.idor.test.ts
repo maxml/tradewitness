@@ -16,10 +16,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // --- mocks -----------------------------------------------------------------
-const findFirst = vi.fn();
+const findFirst = vi.fn<(...a: any[]) => any>();
 const returning = vi.fn();
 const values = vi.fn(() => ({ returning }));
-const insert = vi.fn(() => ({ values }));
+const insert = vi.fn<(...a: any[]) => { values: typeof values }>(() => ({ values }));
 
 vi.mock("@/drizzle/db", () => ({
     db: {
