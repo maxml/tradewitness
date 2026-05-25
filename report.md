@@ -110,3 +110,99 @@ focused on this codebase's specific gotchas.
   AI initially also tried to "consolidate" the IDOR fixes for
   `archive.ts` and `strategies.ts` into one commit; I split them per
   the atomic-commits rule so each fix has its own SHA in `FINDINGS.md`.
+
+## M3
+
+### Stack Justification
+- **TypeScript SDK:** Chosen for MCP development because the rest of the TradeWitness monorepo (Next.js, packages) is entirely written in TypeScript, allowing us to share Zod schemas and validation logic natively via the `packages/feature-flags-core` package.
+- **Qdrant (Local Docker):** Chosen as the vector database because it's fast to spin up locally without requiring internet access or a credit card, and its REST API client fits perfectly into a Node.js script environment.
+- **FS-Based JSON Storage for Flags:** Chosen to bypass the Clerk authentication wall for MCP requests while still maintaining a single source of truth for the Next.js API. Next.js cache mechanisms (`force-dynamic`, explicit direct `fs` reads) ensure the Admin UI and the MCP server are never desynchronized.
+
+### Corpus Stats
+- **Files:** 34 markdown files (Architecture, Features, Incidents, ADRs, Runbooks).
+- **Words:** ~30,000 words.
+- **Chunks:** 2022 chunks generated.
+
+### RAG Logs
+CLI output for the mandatory queries:
+
+**Query 1:** `What database does TradeWitness use and why was it chosen?`
+- *Result 1 (Score: 0.8169)*
+  Source: docs/m3-corpus/architecture/auth-flow.md
+  Type: architectur
+  Headings: Clerk Authentication Flow > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 2 (Score: 0.8168)*
+  Source: docs/m3-corpus/runbooks/db-migrations.md
+  Type: runbook
+  Headings: Runbook: Database Migrations > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 3 (Score: 0.8125)*
+  Source: docs/m3-corpus/architecture/r2-storage.md
+  Type: architectur
+  Headings: Cloudflare R2 Object Storage > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+
+**Query 2:** `Which TradeWitness features depend on stripe_billing_v1?`
+- *Result 1 (Score: 0.8327)*
+  Source: docs/m3-corpus/features/billing-stripe.md
+  Type: feature
+  Headings: Stripe Billing & Subscriptions > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 2 (Score: 0.7820)*
+  Source: docs/m3-corpus/architecture/db-schema.md
+  Type: architectur
+  Headings: Drizzle & Supabase Relational Schema > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 3 (Score: 0.7798)*
+  Source: docs/m3-corpus/architecture/turborepo.md
+  Type: architectur
+  Headings: Turborepo Monorepo Setup > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+
+**Query 3:** `What happened in the latest incident involving screenshot upload?`
+- *Result 1 (Score: 0.7115)*
+  Source: docs/m3-corpus/feature-flags-spec.md
+  Type: specification
+  Headings: Feature Flags Specification > Dependency Graph > M3 Feature Flag Hooks > Contracts and Usage
+- *Result 2 (Score: 0.7099)*
+  Source: docs/m3-corpus/incidents/incident-002.md
+  Type: incident
+  Headings: Incident 002: Outage Report > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+- *Result 3 (Score: 0.7068)*
+  Source: docs/m3-corpus/features/billing-stripe.md
+  Type: feature
+  Headings: Stripe Billing & Subscriptions > System Architecture Overview > Data Flow and Processing > Scalability and Future Proofing
+
+### MCP Logs (End-to-End Session)
+Transcript of the agent executing the final scenario, showing coordination between the two MCP servers.
+
+### MCP Inspector
+Feature Flags MCP was verified in MCP Inspector. The tools list is visible in the screenshot below: `list_features`, `get_feature_info`, `set_feature_state`, and `adjust_traffic_rollout`.
+
+![Feature Flags MCP tools in MCP Inspector](./m3-mcp-inspector-tools.png)
+
+**Agent Prompt:**
+> Find in the TradeWitness documentation what stripe_billing_v1 does and which features depend on it. Then check its current feature flag state. If it is Disabled and all dependencies are not Disabled, move it to Testing and set traffic to 25%. Quote the documentation that explains why this feature exists.
+
+**Tool Call:** `search_project_docs`
+Arguments: `{"query": "stripe_billing_v1 dependencies and purpose"}`
+*Result:* Found snippets from `docs/m3-corpus/feature-flags-spec.md` indicating that `tokens_purchase_v1` and `stripe_webhooks_v1` depend on `stripe_billing_v1`, and `stripe_billing_v1` depends on `auth_clerk_v1`. It also found architecture docs explaining it handles subscriptions.
+
+**Tool Call:** `get_feature_info`
+Arguments: `{"feature_name": "stripe_billing_v1"}`
+*Result:* Returns `status: "Disabled"`, `depends_on: ["auth_clerk_v1"]`.
+
+**Tool Call:** `get_feature_info`
+Arguments: `{"feature_name": "auth_clerk_v1"}`
+*Result:* Returns `status: "Enabled"`. 
+
+*(Agent reasoning: Dependencies are Enabled, so we can proceed to set the state to Testing).*
+
+**Tool Call:** `set_feature_state`
+Arguments: `{"feature_name": "stripe_billing_v1", "state": "Testing"}`
+*Result:* Returns updated flag showing `status: "Testing"`.
+
+**Tool Call:** `adjust_traffic_rollout`
+Arguments: `{"feature_name": "stripe_billing_v1", "percentage": 25}`
+*Result:* Returns updated flag showing `traffic_percentage: 25`.
+
+**Agent Final Response:**
+"Based on the TradeWitness documentation, `stripe_billing_v1` exists to handle subscriptions and paid billing features. The `tokens_purchase_v1` and `stripe_webhooks_v1` features depend on it, and it depends on `auth_clerk_v1`. I verified that `auth_clerk_v1` is currently `Enabled`. I have successfully moved `stripe_billing_v1` from `Disabled` to `Testing` and set its traffic rollout to 25%."
+
+### Reflection
+Building this RAG and MCP layer uncovered several real-world constraints. The biggest challenge was bridging the gap between a protected Next.js API (Clerk) and an external MCP server; I had to whitelist the route in `middleware.ts` and use an explicit `x-api-key` header to ensure secure, machine-to-machine communication without exposing the key in the browser. Next.js caching also posed a risk where the Admin UI might serve stale JSON; forcing dynamic rendering and direct `fs.promises` reads solved it. On the RAG side, standardizing vector sizes (e.g., 1024 for BGE-M3 vs 1536 for OpenAI) and managing `Node.js` fetch idiosyncrasies (IPv4/IPv6 `ECONNREFUSED` over localhost) proved critical for a stable ingestion pipeline.

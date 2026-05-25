@@ -10,6 +10,17 @@ The "killer feature" of TradeWitness is reducing friction in trade journaling. I
 - Implement an HTTP client to upload the captured image via `multipart/form-data` to the `apps/app` backend.
 - Create an API route in `apps/app` to receive the screenshot, upload it to Cloudflare R2 using the `r2.ts` utility, and save the record in Supabase.
 
+## M3 Feature Flag Hook
+
+Task 10.1 must document and seed these flags for this work:
+
+- `screenshots_r2_upload_v1` - backend screenshot upload path.
+- `desktop_collector_v1` - desktop capture client rollout.
+
+`desktop_collector_v1` depends on `screenshots_r2_upload_v1`, so the MCP
+dependency validation should block enabling the collector while uploads are
+disabled.
+
 ## Implementation Steps
 1. **Initialize App:** Setup Tauri (Rust + React) or Electron in `apps/desktop`.
 2. **Screen Capture:** Utilize native APIs (e.g., Tauri plugins or Electron `desktopCapturer`) to capture a region of the screen.

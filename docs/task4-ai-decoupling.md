@@ -12,6 +12,16 @@ The goal of this task is to pivot to a **BYOAI (Bring Your Own AI)** model. Inst
 - Construct a robust Markdown/JSON serialization utility that takes a user's `trades` from Supabase and formats them clearly for LLM ingestion.
 - Implement a "Copy to Clipboard" functionality in the UI.
 
+## M3 Feature Flag Hook
+
+Task 10.1 must document and seed these flags for this work:
+
+- `ai_report_prompt_v1` - enables the BYOAI prompt generation flow.
+- `ai_report_followup_v1` - controls the follow-up prompt/chat affordance.
+
+Task 10.1 must allow an agent to inspect and roll out these flags through
+the runtime API and Feature Flags MCP.
+
 ## Implementation Steps
 1. **Uninstall Dependencies:** Run `pnpm --filter @tradewitness/app remove @anthropic-ai/sdk`.
 2. **Refactor Prompts Generation:** Create a new utility function `generateAIPrompt(trades: Trade[])` in `apps/app/src/features/ai/`. This function should calculate basic summary stats and format the trade list into a string (e.g., CSV or Markdown table format) appended to a base system prompt.

@@ -10,6 +10,15 @@ The `apps/landing` application is based on a personal portfolio template (`prana
 - Implement a `/pricing` page (using dummy data, as Stripe is currently disabled via feature flag).
 - Ensure the overall styling (Tailwind v4) reflects a modern financial/SaaS aesthetic.
 
+## M3 Feature Flag Hook
+
+Task 10.1 must document and seed these flags for this work:
+
+- `landing_blog_v1` - public content/blog surface.
+- `landing_i18n_v1` - localized landing copy.
+- `landing_pricing_v1` - pricing page visibility.
+- `stripe_billing_v1` - real paid billing behind the pricing CTA.
+
 ## Implementation Steps
 1. **Route Deletion:** Delete the folders `app/experience`, `app/projects`, and `app/skills` in `apps/landing/src/`.
 2. **Homepage Overhaul:** Rewrite `Hero.tsx` and `HomePage.tsx` to describe TradeWitness. Replace personal headshots with product mockups or placeholder images.

@@ -1,0 +1,127 @@
+#!/usr/bin/env node
+
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import { QdrantClient } from '@qdrant/js-client-rest';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.resolve(process.cwd(), '../../.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), '../../.env') }); // Fallback
+
+const QDRANT_URL = process.env.QDRANT_URL || 'http://127.0.0.1:6333';
+const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
+const COLLECTION_NAME = process.env.QDRANT_COLLECTION || 'tradewitness_m3_docs';
+const EMBEDDING_PROVIDER = process.env.EMBEDDING_PROVIDER || 'bge-m3';
+
+const client = new QdrantClient({ url: QDRANT_URL, apiKey: QDRANT_API_KEY });
+
+let bgeEmbedderPromise: Promise<any> | undefined;
+
+async function getBgeEmbedder() {
+  if (!bgeEmbedderPromise) {
+    const { pipeline } = await import('@xenova/transformers');
+    bgeEmbedderPromise = pipeline('feature-extraction', 'Xenova/bge-m3');
+  }
+  return bgeEmbedderPromise;
+}
+
+async function getEmbedding(text: string): Promise<number[]> {
+  if (EMBEDDING_PROVIDER === 'openai') {
+    const OpenAI = (await import('openai')).default;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const response = await openai.embeddings.create({
+      model: "text-embedding-3-small",
+      input: text,
+    });
+    return response.data[0].embedding;
+  } else {
+    const embedder = await getBgeEmbedder();
+    const output = await embedder(text, { pooling: 'mean', normalize: true });
+    return Array.from(output.data);
+  }
+}
+
+const server = new Server({
+  name: "search-docs-mcp",
+  version: "0.1.0",
+}, {
+  capabilities: {
+    tools: {}
+  }
+});
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      {
+        name: "search_project_docs",
+        description: [
+          "Searches the TradeWitness documentation corpus using semantic RAG.",
+          "When to call: Call this tool whenever you need to learn about product features, architecture, feature flags, or incident histories.",
+          "When NOT to call: Do NOT call this tool to read literal code or state files.",
+          "Inputs: { query: string, top_k?: number }. 'query' is your semantic search string. 'top_k' is optional, default 5.",
+          "Output: Text containing a formatted list of matching document excerpts, file sources, and parent headings.",
+          "Example: search_project_docs({ query: 'stripe_billing_v1 dependencies and purpose' })",
+          "You MUST use this before modifying any feature flags to understand their purpose and dependencies."
+        ].join("\n"),
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: { type: "string", description: "The search query (e.g. 'stripe_billing_v1 dependencies')" },
+            top_k: { type: "integer", minimum: 1, maximum: 10, description: "Number of top results to return (default is 5).", default: 5 }
+          },
+          required: ["query"]
+        }
+      }
+    ]
+  };
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  try {
+    if (request.params.name === "search_project_docs") {
+      const { query, top_k = 5 } = request.params.arguments as any;
+      if (typeof query !== 'string' || query.trim().length === 0) {
+        throw new Error("query must be a non-empty string.");
+      }
+      if (!Number.isInteger(top_k) || top_k < 1 || top_k > 10) {
+        throw new Error("top_k must be an integer from 1 to 10.");
+      }
+
+      const vector = await getEmbedding(query);
+      
+      const results = await client.search(COLLECTION_NAME, {
+        vector,
+        limit: top_k,
+        with_payload: true
+      });
+
+      const formattedResults = results.map((res: any, i) => {
+        const p = res.payload;
+        const excerpt = typeof p.content === 'string' ? p.content : p.summary;
+        return `Result ${i + 1} (Score: ${res.score.toFixed(4)})\nSource: ${p.source_file}\nType: ${p.type}\nHeadings: ${p.parent_headings?.join(' > ')}\nExcerpt:\n${excerpt}`;
+      });
+
+      return {
+        content: [{ type: "text", text: formattedResults.join('\n\n') }]
+      };
+    }
+
+    throw new McpError(ErrorCode.MethodNotFound, "Unknown tool");
+  } catch (error: any) {
+    return {
+      content: [{ type: "text", text: `Error: ${error.message}` }],
+      isError: true
+    };
+  }
+});
+
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error("Search-Docs MCP server running on stdio");
+}
+
+main().catch(console.error);

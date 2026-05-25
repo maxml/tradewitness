@@ -9,6 +9,12 @@ The application is currently designed to run locally using `pnpm dev`. To deploy
 - Configure environment variables for production.
 - Provide instructions for setting up a reverse proxy (like Nginx or Caddy) to handle SSL/TLS and route `tradewitness.com` to the landing container and `app.tradewitness.com` to the web app container.
 
+## M3 Feature Flag Hook
+
+Task 10.2 should include a deployment runbook in the RAG corpus so Search Docs
+MCP can answer deployment questions. Do not add this as a default M3 feature
+flag unless the 25-flag seed list is intentionally revised.
+
 ## Implementation Steps
 
 ### Phase 0: Pre-Deploy CI Gates (catch broken code BEFORE the Docker build)

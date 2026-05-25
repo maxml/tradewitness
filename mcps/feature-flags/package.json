@@ -1,0 +1,21 @@
+{
+  "name": "@tradewitness/feature-flags-mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "feature-flags-mcp": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "@tradewitness/feature-flags-core": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

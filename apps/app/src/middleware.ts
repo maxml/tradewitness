@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
     "/ai-video.webm",
     "/api/webhooks/stripe",
     "/api/webhooks/clerk(.*)",
+    "/api/feature-flags(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

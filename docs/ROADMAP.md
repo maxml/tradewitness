@@ -25,6 +25,14 @@ This document outlines the high-level tasks and current progress for the TradeWi
 
 ## 🟡 Upcoming Tasks
 
+### Task 10: M3 RAG and MCP Homework Readiness
+- Transform TradeWitness into the custom project for the M3 RAG/MCP homework.
+- Add a 20+ file / ~30k+ word documentation corpus under `docs/m3-corpus/`.
+- Add runtime feature flags, a Feature Flags MCP server, RAG ingestion/query,
+  a Search Docs MCP server, and `report.md` logs.
+- Subtasks: Task 10.1 Feature Flags MCP, Task 11 Qdrant RAG/Search MCP,
+  and Task 12 Report/Rules/All Commits.
+
 ### Task 4: AI Decoupling & BYOAI (Bring Your Own AI)
 - Remove hard dependency on paid Anthropic API (`@anthropic-ai/sdk`).
 - Redesign the "AI Report" flow: Generate a smart prompt containing the user's trade data (Markdown/JSON) with a "Copy" button, allowing users to paste it into their own ChatGPT/Claude accounts for free analysis.
