@@ -39,11 +39,23 @@ type DeleteAddFAvoriteReportResult =
     | ReportError;
 
 export async function saveReport(report: ReportType, userId: string) {
+    // Ownership is derived from the authenticated session, never from the caller.
+    // RLS is disabled (ADR-0001), so this app-layer check is the only control.
+    const { userId: sessionUserId } = await auth();
+    if (!sessionUserId) {
+        return { success: false, error: "Unauthorized" };
+    }
+    if (userId && userId !== sessionUserId) {
+        console.warn(
+            "saveReport: ignoring caller-supplied userId that does not match the session"
+        );
+    }
+
     try {
         const result = await db
             .insert(ReportsTable)
             .values({
-                userId,
+                userId: sessionUserId,
                 reportData: report, // Store the complete report structure as JSON
             })
             .returning({ reportId: ReportsTable.id });
@@ -106,9 +118,16 @@ export async function getReportById(
 ): Promise<GetReportByIdResult | null> {
     if (!reportId) return null;
 
+    // Scope the lookup to the authenticated owner — prevents IDOR (RLS off, ADR-0001).
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized" };
+
     try {
         const report = await db.query.ReportsTable.findFirst({
-            where: eq(ReportsTable.id, reportId),
+            where: and(
+                eq(ReportsTable.id, reportId),
+                eq(ReportsTable.userId, userId)
+            ),
         });
 
         return {

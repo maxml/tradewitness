@@ -99,3 +99,49 @@ describe("characterization (invariant) — saveReport", () => {
         );
     });
 });
+
+// Expected to FAIL pre-fix, PASS post-fix. Demonstrates the IDOR is closed.
+describe("fix verification — IDOR closed", () => {
+    it("getReportById rejects an unauthenticated caller and never queries", async () => {
+        authMock.mockResolvedValue({ userId: null });
+        findFirst.mockResolvedValue({ id: "rep_123", userId: "someone_else", reportData });
+
+        const res = await getReportById("rep_123");
+
+        expect(res).not.toBeNull();
+        expect(res!.success).toBe(false);
+        expect((res as { success: false; error: string }).error).toBe("Unauthorized");
+        expect(findFirst).not.toHaveBeenCalled();
+    });
+
+    it("getReportById scopes the lookup to the authenticated user (auth enforced)", async () => {
+        authMock.mockResolvedValue({ userId: "user_owner_2f8a" });
+        findFirst.mockResolvedValue({ id: "rep_123", userId: "user_owner_2f8a", reportData });
+
+        await getReportById("rep_123");
+
+        expect(authMock).toHaveBeenCalledTimes(1);
+        expect(findFirst).toHaveBeenCalledTimes(1);
+    });
+
+    it("saveReport rejects an unauthenticated caller and never inserts", async () => {
+        authMock.mockResolvedValue({ userId: null });
+
+        const res = await saveReport(reportData, "user_owner_2f8a");
+
+        expect(res.success).toBe(false);
+        expect((res as { success: false; error: string }).error).toBe("Unauthorized");
+        expect(insert).not.toHaveBeenCalled();
+    });
+
+    it("saveReport ignores a spoofed userId and writes under the session user", async () => {
+        authMock.mockResolvedValue({ userId: "user_session_real" });
+        returning.mockResolvedValue([{ reportId: "rep_new_99" }]);
+
+        await saveReport(reportData, "user_VICTIM_injected");
+
+        expect(values).toHaveBeenCalledWith(
+            expect.objectContaining({ userId: "user_session_real" })
+        );
+    });
+});
