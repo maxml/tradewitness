@@ -1,0 +1,20 @@
+M6 Stage 4 — test run (2026-05-25T19:48Z)
+================================================================
+
+### Service 1 — feature-flags-core (packages/feature-flags-core)
+$ pnpm --filter @tradewitness/feature-flags-core test
+
+ RUN  v4.1.7 /home/dell/tradwitness/git/tradewitness/packages/feature-flags-core
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  22:48:23
+   Duration  426ms (transform 76ms, setup 0ms, import 125ms, tests 16ms, environment 0ms)
+
+### Service 2 — RAG (mcps/rag)
+$ pnpm --filter @tradewitness/rag test
+
+ RUN  v4.1.7 /home/dell/tradwitness/git/tradewitness/mcps/rag
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  22:48:24
+   Duration  775ms (transform 83ms, setup 0ms, import 462ms, tests 50ms, environment 0ms)

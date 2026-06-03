@@ -1,14 +1,9 @@
 "use server";
 
-import {
-    CheckoutTransactionParams,
-    CreateTransactionParams,
-} from "@/types/stripe.types";
+import { CheckoutTransactionParams } from "@/types/stripe.types";
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
-import { updateCredits } from "./user";
-import { db } from "@/drizzle/db";
-import { TransactionsTable } from "@/drizzle/schema";
+import { auth } from "@clerk/nextjs/server";
 
 const PLAN_TOKEN_MAP = {
     "10": 20,
@@ -16,6 +11,16 @@ const PLAN_TOKEN_MAP = {
 } as const;
 
 export async function checkoutCredits(transaction: CheckoutTransactionParams) {
+    // Derive the buyer from the authenticated session — never trust the
+    // caller-supplied buyerId (prevents purchasing/crediting on someone else's behalf).
+    const { userId } = await auth();
+    if (!userId) {
+        return {
+            success: false,
+            message: "You must be signed in to purchase credits.",
+        };
+    }
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_API_KEY!);
 
     const checkPlan =
@@ -46,34 +51,11 @@ export async function checkoutCredits(transaction: CheckoutTransactionParams) {
             plan: transaction.plan,
             credits:
                 PLAN_TOKEN_MAP[transaction.plan as keyof typeof PLAN_TOKEN_MAP],
-            buyerId: transaction.buyerId,
+            buyerId: userId,
         },
         mode: "payment",
         success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/private/tokens`,
         cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/private/tokens`,
     });
     redirect(session.url!);
-}
-
-export async function createTransaction(transaction: CreateTransactionParams) {
-    try {
-        const newTransaction = await db
-            .insert(TransactionsTable)
-            .values({ plan: transaction.plan, userId: transaction.buyerId });
-
-        const response = await updateCredits({
-            plan: transaction.plan,
-            userId: transaction.buyerId,
-        });
-
-        console.log(response.message);
-
-        return JSON.parse(JSON.stringify(newTransaction));
-    } catch (error) {
-        console.log(error);
-        return {
-            success: false,
-            message: "An unexpected error occurred. Please try again later.",
-        };
-    }
 }

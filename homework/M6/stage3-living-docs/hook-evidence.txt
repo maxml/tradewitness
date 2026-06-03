@@ -1,0 +1,2 @@
+[update-index hook] triggered by Write on mcps/rag/__hooktest/probe.ts
+[update-index hook] ✅ updated project-index.json (tree + last_updated)
