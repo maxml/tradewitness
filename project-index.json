@@ -202,7 +202,8 @@
     "homework": [
       "M4",
       "M5",
-      "M6"
+      "M6",
+      "M7"
     ],
     "homework/M6": [
       "PLAN.md",
@@ -322,6 +323,9 @@
       "package.json"
     ],
     "homework/M5/n8n-data/storage": [],
+    "homework/M7": [
+      "PLAN.md"
+    ],
     "homework/M4": [
       "README.md"
     ],
@@ -772,5 +776,5 @@
     "m3_corpus": "docs/m3-corpus/adrs are Lorem-ipsum placeholders (corpus padding), not real decisions. Real ADRs are docs/adr/0001-0003.",
     "audit": "See homework/M6/stage3-living-docs/docs-audit.md for the full ✅/🔄/📦/❌ verdict per docs item."
   },
-  "last_updated": "2026-05-25T19:55:49.377628+00:00"
+  "last_updated": "2026-06-03T10:05:31.984488+00:00"
 }
