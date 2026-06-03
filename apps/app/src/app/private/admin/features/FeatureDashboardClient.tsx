@@ -6,6 +6,7 @@ import { updateFeatureFlag } from "./actions";
 import { toast } from "sonner";
 import * as Switch from "@radix-ui/react-switch";
 import * as Slider from "@radix-ui/react-slider";
+import AutoPilotControls from "@/components/admin/AutoPilotControls";
 
 interface Props {
   initialFlags: FeatureFlag[];
@@ -175,6 +176,13 @@ export default function FeatureDashboardClient({ initialFlags }: Props) {
                       <span>{new Date(flag.last_modified).toLocaleDateString()}</span>
                     </div>
                   </div>
+
+                  <AutoPilotControls
+                    feature={flag}
+                    onUpdate={(next) =>
+                      setFlags((prev) => prev.map((f) => (f.name === next.name ? next : f)))
+                    }
+                  />
                 </div>
               </div>
             );

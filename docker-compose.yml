@@ -1,0 +1,43 @@
+# Local n8n for M5 homework. All paths are relative to the project root
+# (where this file lives). State lands in homework/M5/n8n-data (gitignored).
+#
+# Usage (run from the project root). Always pass --env-file or compose
+# will substitute empty values for ${TELEGRAM_BOT_TOKEN} etc.:
+#   docker compose --env-file homework/M5/.env.local up -d
+#   docker compose --env-file homework/M5/.env.local logs -f n8n
+#   docker compose --env-file homework/M5/.env.local ps
+#   docker compose --env-file homework/M5/.env.local down       # stop, keep data
+#   docker compose --env-file homework/M5/.env.local down -v    # stop; data is on host, won't be wiped
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n-m5
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      # Local-only — do NOT ship these flags to anything public.
+      N8N_SECURE_COOKIE: "false"
+      N8N_HOST: "localhost"
+      N8N_PORT: "5678"
+      WEBHOOK_URL: "http://localhost:5678/"
+      GENERIC_TIMEZONE: "Europe/Kyiv"
+      # Allow n8n Code nodes to require('fs'). WF2 reads logs.json from the
+      # mounted /data/m5 directory; without this the Code node throws.
+      NODE_FUNCTION_ALLOW_BUILTIN: "fs"
+      # Surface secrets from .env.local into the container env so workflow
+      # nodes can reference them with ={{ $env.X }} instead of hardcoding.
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID}"
+      N8N_WEBHOOK_API_KEY: "${N8N_WEBHOOK_API_KEY}"
+      M3_MCP_API_KEY: "${M3_MCP_API_KEY}"
+    volumes:
+      # n8n's own state (workflows, credentials, executions DB). Gitignored.
+      - ./homework/M5/n8n-data:/home/node/.n8n
+      # WF2 reads logs.json written by simulate_wf2.py from the host.
+      - ./homework/M5:/data/m5
+    extra_hosts:
+      # Lets the container reach services on the host (MCP, Next.js app)
+      # via http://host.docker.internal:<port>. Required on native Linux.
+      - "host.docker.internal:host-gateway"
