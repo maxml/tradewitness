@@ -79,6 +79,16 @@ export async function getChatLogsForAdmin(
 
     return rows.map(({ detectedPii, ...r }) => ({
         ...r,
+        // Fail-closed: if Presidio didn't fully run for a field (status !== "ok"),
+        // we can't trust the regex-only redaction to have removed names, so the
+        // text is NOT sent to the client at all. The UI renders
+        // <REDACTION_UNAVAILABLE> for null. See PLAN §4.5.
+        redactedUserMessage:
+            r.userRedactionStatus === "ok" ? r.redactedUserMessage : null,
+        redactedAssistantResponse:
+            r.assistantRedactionStatus === "ok"
+                ? r.redactedAssistantResponse
+                : null,
         detectedPiiTypes: [
             ...new Set(
                 ((detectedPii as DetectedPiiSpan[] | null) ?? []).map(

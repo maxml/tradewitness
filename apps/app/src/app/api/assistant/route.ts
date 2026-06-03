@@ -57,7 +57,14 @@ export async function POST(request: Request) {
         return json({ error: "conversation_error" }, 500);
     }
 
-    const reserved = await reserveTurn({ conversationId, userId, userMessage: message });
+    let reserved: { id: string; turnIndex: number };
+    try {
+        reserved = await reserveTurn({ conversationId, userId, userMessage: message });
+    } catch (err) {
+        // No row exists yet to finalize — return a controlled error.
+        console.error("reserveTurn failed:", err);
+        return json({ error: "could_not_start" }, 503);
+    }
 
     const startedAt = Date.now();
     const patch: FinalizeTurnInput = {

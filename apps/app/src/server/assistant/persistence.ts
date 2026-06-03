@@ -5,7 +5,7 @@ import "server-only";
 import { randomUUID } from "crypto";
 import { db } from "@/drizzle/db";
 import { ChatLogsTable, type DetectedPiiSpan } from "@/drizzle/schema";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { ASSISTANT_MAX_HISTORY_TURNS } from "./config";
 import type { ChatTurn } from "./agent";
 
@@ -80,39 +80,44 @@ export async function loadHistory(
     return turns.slice(-maxMsgs);
 }
 
-/** Insert the pending reserved row. Retries once on a turn-index race. */
+/**
+ * Insert the pending reserved row. Turn-index allocation is serialized per
+ * conversation with a transaction-scoped Postgres advisory lock, so parallel
+ * sends to the same conversation can't race the UNIQUE(conversation_id,
+ * turn_index) slot. The unique constraint stays as a backstop. See §4.2.
+ */
 export async function reserveTurn(args: {
     conversationId: string;
     userId: string;
     userMessage: string;
 }): Promise<{ id: string; turnIndex: number }> {
-    for (let attempt = 0; attempt < 2; attempt++) {
-        const rows = await db.query.ChatLogsTable.findMany({
-            where: eq(ChatLogsTable.conversationId, args.conversationId),
-            columns: { turnIndex: true },
-        });
+    return db.transaction(async (tx) => {
+        // Serialize concurrent turn allocation for this conversation only.
+        await tx.execute(
+            sql`select pg_advisory_xact_lock(hashtextextended(${args.conversationId}, 0))`
+        );
+
+        const rows = await tx
+            .select({ turnIndex: ChatLogsTable.turnIndex })
+            .from(ChatLogsTable)
+            .where(eq(ChatLogsTable.conversationId, args.conversationId));
         const nextTurnIndex =
             rows.reduce((m, r) => Math.max(m, r.turnIndex), -1) + 1;
-        try {
-            const [inserted] = await db
-                .insert(ChatLogsTable)
-                .values({
-                    conversationId: args.conversationId,
-                    turnIndex: nextTurnIndex,
-                    userId: args.userId,
-                    userMessage: args.userMessage,
-                    status: "pending",
-                    sensitivity: "private", // safe default until decided
-                })
-                .returning({ id: ChatLogsTable.id });
-            return { id: inserted.id, turnIndex: nextTurnIndex };
-        } catch (err) {
-            // UNIQUE(conversation_id, turn_index) violation → another send won
-            // the slot; recompute and retry once.
-            if (attempt === 1) throw err;
-        }
-    }
-    throw new ConversationError("turn conflict", 409);
+
+        const [inserted] = await tx
+            .insert(ChatLogsTable)
+            .values({
+                conversationId: args.conversationId,
+                turnIndex: nextTurnIndex,
+                userId: args.userId,
+                userMessage: args.userMessage,
+                status: "pending",
+                sensitivity: "private", // safe default until decided
+            })
+            .returning({ id: ChatLogsTable.id });
+
+        return { id: inserted.id, turnIndex: nextTurnIndex };
+    });
 }
 
 export type FinalizeTurnInput = {
