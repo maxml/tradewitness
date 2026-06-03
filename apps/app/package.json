@@ -11,6 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:prune-chat-logs": "tsx scripts/prune-chat-logs.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

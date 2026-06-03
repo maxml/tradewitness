@@ -416,6 +416,7 @@
       "package.json",
       "postcss.config.mjs",
       "public",
+      "scripts",
       "src",
       "tailwind.config.ts",
       "tests",
@@ -449,6 +450,7 @@
       "0020_charming_gertrude_yorkes.sql",
       "0021_add_custom_field_names.sql",
       "0021_lyrical_exiles.sql",
+      "0022_supreme_the_fallen.sql",
       "meta",
       "relations.ts",
       "schema.ts"
@@ -476,7 +478,11 @@
       "0019_snapshot.json",
       "0020_snapshot.json",
       "0021_snapshot.json",
+      "0022_snapshot.json",
       "_journal.json"
+    ],
+    "apps/app/scripts": [
+      "prune-chat-logs.ts"
     ],
     "apps/app/src": [
       "app",
@@ -527,6 +533,7 @@
       "StatsGridPageOne.tsx",
       "StatsGridPageTwo.tsx",
       "admin",
+      "assistant",
       "calendar",
       "feedback",
       "history",
@@ -566,7 +573,9 @@
     ],
     "apps/app/src/server": [
       "actions",
-      "billing.ts"
+      "assistant",
+      "billing.ts",
+      "queries"
     ],
     "apps/app/tests": [
       "stage2"
@@ -776,5 +785,5 @@
     "m3_corpus": "docs/m3-corpus/adrs are Lorem-ipsum placeholders (corpus padding), not real decisions. Real ADRs are docs/adr/0001-0003.",
     "audit": "See homework/M6/stage3-living-docs/docs-audit.md for the full ✅/🔄/📦/❌ verdict per docs item."
   },
-  "last_updated": "2026-06-03T10:05:31.984488+00:00"
+  "last_updated": "2026-06-03T11:28:04.876630+00:00"
 }
