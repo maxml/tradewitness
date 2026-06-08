@@ -55,4 +55,6 @@ drizzle/0022_supreme_the_fallen.sql  — миграция chat_logs
   `dz1-cloud-answers.md` (реальные ответы OpenRouter), `dz1-routing.json`. Харнес:
   `apps/app/scripts/m7-demo.ts` (`pnpm -C apps/app m7-demo`).
 - `writeup-dz1.md` — разбор DZ1 (заполнен: экономия, GPU, найденные риски).
-- `dz2/` — атака/защита инъекций (PLAN §5, опционально).
+- `dz2/` — **атака/защита инъекций (готово)**: `attack-log.md` (before/after, прямая +
+  непрямая LLM01), `attack-log.json`, `writeup-dz2.md` (OWASP LLM01/LLM06, lethal trifecta).
+  Харнес: `apps/app/scripts/m7-dz2-attack.ts`.
