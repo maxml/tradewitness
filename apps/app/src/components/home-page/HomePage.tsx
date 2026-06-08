@@ -4,21 +4,52 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
-import { StatsGridPageTwo } from "@/components/StatsGridPageTwo";
+import dynamic from "next/dynamic";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { CustomButton } from "../CustomButton";
-import { StatsGridPageOne } from "@/components/StatsGridPageOne";
 import { SignUpButton } from "@clerk/nextjs";
 import HomePageStart from "./HomePageStart";
-import HomePageReviews from "./HomePageReviews";
-import HomePageCalendar from "./HomePageCalendar";
-import HomePageFooter from "./HomePageFooter";
 import { fakeDataChartTwo, otherData, tradingData } from "@/data/data";
 import Link from "next/link";
-import HomePageAi from "./HomePageAI";
 import { SiClaude } from "react-icons/si";
-import HomePageMobileAiPage from "./HomePageMobileAI";
-import HomePageJournal from "./HomePageJournal";
+import {
+    StatsGridPageOne,
+    StatsGridPageTwo,
+} from "@/components/StatsGridDynamic";
+
+// Lightweight placeholder shown while a deferred section loads.
+const SectionFallback = () => (
+    <div className="flex-center py-16">
+        <div className="running-algorithm">
+            <span className="dot"></span>
+            <span className="dot"></span>
+            <span className="dot"></span>
+        </div>
+    </div>
+);
+
+// Below-the-fold marketing sections are code-split (smaller prod bundle / faster
+// client load) but kept server-rendered (default ssr: true) so their content
+// still appears in the initial HTML. The @mui/x-charts stat grids are imported
+// (lazily, ssr: false) from the shared StatsGridDynamic module.
+const HomePageAi = dynamic(() => import("./HomePageAI"), {
+    loading: SectionFallback,
+});
+const HomePageMobileAiPage = dynamic(() => import("./HomePageMobileAI"), {
+    loading: SectionFallback,
+});
+const HomePageCalendar = dynamic(() => import("./HomePageCalendar"), {
+    loading: SectionFallback,
+});
+const HomePageJournal = dynamic(() => import("./HomePageJournal"), {
+    loading: SectionFallback,
+});
+const HomePageReviews = dynamic(() => import("./HomePageReviews"), {
+    loading: SectionFallback,
+});
+const HomePageFooter = dynamic(() => import("./HomePageFooter"), {
+    loading: SectionFallback,
+});
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 

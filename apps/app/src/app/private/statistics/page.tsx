@@ -1,8 +1,10 @@
 "use client";
 
 import AddCapitalDialog from "@/components/statistics/AddCapitalDialog";
-import { StatsGridPageOne } from "@/components/StatsGridPageOne";
-import { StatsGridPageTwo } from "@/components/StatsGridPageTwo";
+import {
+    StatsGridPageOne,
+    StatsGridPageTwo,
+} from "@/components/StatsGridDynamic";
 import { getOtherDataForGridPageTwo } from "@/features/statistics/getDataForDetails";
 import {
     getDataForSummaryChartGridPageOne,

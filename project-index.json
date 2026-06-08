@@ -344,6 +344,7 @@
     "homework/M7/demo": [
       ".gitkeep",
       "README.md",
+      "dashboard-screenshot.png",
       "dz1-cloud-answers.md",
       "dz1-dashboard-snapshot.md",
       "dz1-history-no-leak.md",
@@ -519,7 +520,7 @@
       "features",
       "hooks",
       "lib",
-      "middleware.ts",
+      "proxy.ts",
       "redux",
       "server",
       "types",
@@ -557,6 +558,7 @@
       "Filtering.tsx",
       "MobileNavigation.tsx",
       "ReduxProvider.tsx",
+      "StatsGridDynamic.tsx",
       "StatsGridPageOne.tsx",
       "StatsGridPageTwo.tsx",
       "admin",
@@ -812,5 +814,5 @@
     "m3_corpus": "docs/m3-corpus/adrs are Lorem-ipsum placeholders (corpus padding), not real decisions. Real ADRs are docs/adr/0001-0003.",
     "audit": "See homework/M6/stage3-living-docs/docs-audit.md for the full ✅/🔄/📦/❌ verdict per docs item."
   },
-  "last_updated": "2026-06-08T12:10:50.205367+00:00"
+  "last_updated": "2026-06-08T12:32:29.286115+00:00"
 }

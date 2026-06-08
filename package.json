@@ -8,6 +8,8 @@
   "packageManager": "pnpm@9.12.0",
   "scripts": {
     "dev": "turbo run dev",
+    "dev:app": "turbo run dev --filter=@tradewitness/app",
+    "dev:landing": "turbo run dev --filter=@tradewitness/landing",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test"

@@ -1,54 +1,34 @@
 import React from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart } from "@mui/x-charts/PieChart";
 
 export const FollowedStrategyPie = ({ percentage = 65 }) => {
     const data = [
-        { name: "Completed", value: percentage },
-        { name: "Remaining", value: 100 - percentage },
+        { id: 0, value: percentage, color: "var(--buy)" },
+        { id: 1, value: 100 - percentage, color: "var(--sell)" },
     ];
-
-    const COLORS = ["var(--buy)", "var(--sell)"];
 
     return (
         <div className="w-8 h-8 flex items-center justify-center relative">
-            <ResponsiveContainer width="100%" height="100%">
-                <PieChart >
-                    <Pie
-                        data={data}
-                        cx="50%"
-                        cy="50%"
-                        startAngle={90}
-                        endAngle={-270}
-                        innerRadius={11}
-                        outerRadius={16}
-                        paddingAngle={0}
-
-                        dataKey="value"
-                        strokeWidth={0}>
-                        {data.map((entry, index) => (
-                            <Cell
-                                key={`cell-${index}`}
-                                fill={COLORS[index % COLORS.length]}
-                            />
-                        ))}
-                    </Pie>
-                </PieChart>
-
-            </ResponsiveContainer>
-
-            {/* Icon in the center */}
+            <PieChart
+                width={32}
+                height={32}
+                margin={{ top: 0, bottom: 0, left: 0, right: 0 }}
+                series={[
+                    {
+                        data,
+                        innerRadius: 11,
+                        outerRadius: 16,
+                        paddingAngle: 0,
+                        startAngle: 0,
+                        endAngle: 360,
+                    },
+                ]}
+                tooltip={{ trigger: "none" }}
+                slotProps={{ legend: { hidden: true } }}
+            />
 
             {/* Percentage text in the center */}
-            <div className="absolute inset-0 flex items-center justify-center cursor-pointer">
-
-            </div>
-            {/* <div className="absolute inset-0 flex items-center justify-center cursor-pointer">
-                <div className="text-center">
-                    <span className="text-[0.6rem] font-bold">
-                        {Math.round(percentage)}%
-                    </span>
-                </div>
-            </div> */}
+            <div className="absolute inset-0 flex items-center justify-center cursor-pointer"></div>
         </div>
     );
 };
