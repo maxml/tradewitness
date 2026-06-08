@@ -345,6 +345,8 @@
       ".gitkeep",
       "README.md",
       "dz1-cloud-answers.md",
+      "dz1-dashboard-snapshot.md",
+      "dz1-history-no-leak.md",
       "dz1-routing.json",
       "dz1-routing.md"
     ],
@@ -506,6 +508,7 @@
     "apps/app/scripts": [
       "m7-demo.ts",
       "m7-dz2-attack.ts",
+      "m7-seed-dashboard.ts",
       "prune-chat-logs.ts"
     ],
     "apps/app/src": [
@@ -809,5 +812,5 @@
     "m3_corpus": "docs/m3-corpus/adrs are Lorem-ipsum placeholders (corpus padding), not real decisions. Real ADRs are docs/adr/0001-0003.",
     "audit": "See homework/M6/stage3-living-docs/docs-audit.md for the full ✅/🔄/📦/❌ verdict per docs item."
   },
-  "last_updated": "2026-06-08T11:37:40.773747+00:00"
+  "last_updated": "2026-06-08T12:10:50.205367+00:00"
 }
