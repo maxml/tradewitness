@@ -116,11 +116,10 @@
   },
   "filesystem_tree": {
     ".": [
-      ".agents",
       ".claude",
-      ".codex",
       ".env.example",
       ".env.local",
+      ".git",
       ".gitignore",
       ".node-version",
       ".npmrc",
@@ -154,8 +153,7 @@
     ],
     ".claude": [
       "agents",
-      "scripts",
-      "settings.local.json"
+      "scripts"
     ],
     ".claude/scripts": [
       "update_project_index.py"
@@ -176,7 +174,6 @@
       "db-smoke.sh",
       "generate-m3-corpus.ts"
     ],
-    ".agents": [],
     "docs-archived-2026-05-25": [
       "task-logs"
     ],
@@ -229,15 +226,11 @@
     "homework/M6/stage1-code-review": [
       "architecture-findings.jsonl",
       "architecture-review.md",
-      "homework",
       "performance-findings.jsonl",
       "performance-review.md",
       "security-findings.jsonl",
       "security-review.md",
       "synthesis.md"
-    ],
-    "homework/M6/stage1-code-review/homework": [
-      "M6"
     ],
     "homework/M6/stage3-living-docs": [
       "00-plan.md",
@@ -282,12 +275,9 @@
     ],
     "homework/M5": [
       ".env.example",
-      ".env.local",
       "README.md",
       "docs",
       "findings.md",
-      "logs.json",
-      "n8n-data",
       "n8n-import-notes.md",
       "review.md",
       "screencast.mp4",
@@ -310,19 +300,6 @@
       "05-hallucination-test.md",
       "07-screencast.md"
     ],
-    "homework/M5/n8n-data": [
-      "config",
-      "database.sqlite",
-      "database.sqlite-shm",
-      "database.sqlite-wal",
-      "n8nEventLog.log",
-      "nodes",
-      "storage"
-    ],
-    "homework/M5/n8n-data/nodes": [
-      "package.json"
-    ],
-    "homework/M5/n8n-data/storage": [],
     "homework/M7": [
       "0-deploy.md",
       "PLAN.md",
@@ -349,22 +326,19 @@
       "landing"
     ],
     "apps/landing": [
-      ".env.example",
       ".env.local",
       ".gitignore",
       "LICENSE",
       "README.md",
       "docs",
       "eslint.config.mjs",
-      "next-env.d.ts",
       "next.config.ts",
       "package.json",
       "postcss.config.mjs",
       "public",
       "src",
       "supabase-schema.sql",
-      "tsconfig.json",
-      "tsconfig.tsbuildinfo"
+      "tsconfig.json"
     ],
     "apps/landing/src": [
       "app",
@@ -508,7 +482,7 @@
       "features",
       "hooks",
       "lib",
-      "middleware.ts",
+      "proxy.ts",
       "redux",
       "server",
       "types",
@@ -665,7 +639,6 @@
       "fake-user-8.jpeg",
       "fake-user-9.jpeg"
     ],
-    ".codex": [],
     "docs": [
       "README.md",
       "ROADMAP.md",
@@ -801,5 +774,5 @@
     "m3_corpus": "docs/m3-corpus/adrs are Lorem-ipsum placeholders (corpus padding), not real decisions. Real ADRs are docs/adr/0001-0003.",
     "audit": "See homework/M6/stage3-living-docs/docs-audit.md for the full ✅/🔄/📦/❌ verdict per docs item."
   },
-  "last_updated": "2026-06-08T11:23:50.224217+00:00"
+  "last_updated": "2026-06-08T12:06:20.091218+00:00"
 }
