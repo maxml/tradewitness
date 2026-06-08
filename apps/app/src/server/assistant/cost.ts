@@ -3,8 +3,13 @@ import "server-only";
 
 type Price = { inUsdPer1M: number; outUsdPer1M: number };
 
-// Published Anthropic pricing (USD per 1M tokens). Keyed by model id prefix.
+// Published provider pricing (USD per 1M tokens). Keyed by model id prefix.
 const PRICING: Record<string, Price> = {
+    // OpenRouter cloud leg (default).
+    "openai/gpt-4o-mini": { inUsdPer1M: 0.15, outUsdPer1M: 0.6 },
+    "openai/gpt-4o": { inUsdPer1M: 2.5, outUsdPer1M: 10 },
+    "google/gemini-2.0-flash-001": { inUsdPer1M: 0.1, outUsdPer1M: 0.4 },
+    // Anthropic (kept for reference / if CLOUD_MODEL is pointed back at Claude).
     "claude-sonnet-4-5": { inUsdPer1M: 3, outUsdPer1M: 15 },
     "claude-3-7-sonnet": { inUsdPer1M: 3, outUsdPer1M: 15 },
     "claude-opus-4": { inUsdPer1M: 15, outUsdPer1M: 75 },

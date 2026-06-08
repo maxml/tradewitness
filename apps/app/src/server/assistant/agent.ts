@@ -1,22 +1,26 @@
 // M7 — agent loop for both legs. Hard limits so a weak 3B local model can't
 // hang in a tool loop or hallucinate a result. See homework/M7/PLAN.md §4.3.
+//
+// Both legs speak the SAME OpenAI-compatible chat/completions + tools protocol:
+//   - local  → Ollama   (http://localhost:11435/v1, no auth)
+//   - cloud  → OpenRouter (https://openrouter.ai/api/v1, Bearer key)
+// One loop, two endpoints — keeps the legs from diverging (§4.3, §6).
 import "server-only";
 
-import Anthropic from "@anthropic-ai/sdk";
 import {
     ASSISTANT_MAX_TOOL_CALLS,
     ASSISTANT_TOOL_TIMEOUT_MS,
     ASSISTANT_TURN_TIMEOUT_MS,
-    CLAUDE_MODEL,
+    CLOUD_MODEL,
     OLLAMA_BASE_URL,
     OLLAMA_MODEL,
+    OPENROUTER_API_KEY,
+    OPENROUTER_BASE_URL,
     assertLocalOllamaUrl,
 } from "./config";
 import {
     findTool,
-    normalizeAnthropicToolUse,
     normalizeOpenAIToolCall,
-    toAnthropicTools,
     toOpenAITools,
     type ToolDefinition,
 } from "./tools";
@@ -74,83 +78,15 @@ async function runTool(
     }
 }
 
-// ── Cloud leg (Anthropic) ────────────────────────────────────────────────────
-
-const anthropic = new Anthropic({ apiKey: process.env.CLAUDE_API_KEY });
-
-async function runCloud(input: AgentInput): Promise<AgentResult> {
-    const messages: Anthropic.MessageParam[] = [
-        ...input.history.map((t) => ({ role: t.role, content: t.content })),
-        { role: "user" as const, content: input.userMessage },
-    ];
-    const tools = toAnthropicTools(input.tools);
-
-    let toolCalls = 0;
-    let lastText = "";
-    let usage: AgentResult["usage"] = null;
-
-    for (let step = 0; step <= ASSISTANT_MAX_TOOL_CALLS; step++) {
-        const res = await anthropic.messages.create({
-            model: CLAUDE_MODEL,
-            max_tokens: 1500,
-            system: input.system,
-            messages,
-            ...(tools.length > 0 ? { tools } : {}),
-        });
-        usage = { input_tokens: res.usage.input_tokens, output_tokens: res.usage.output_tokens };
-
-        const textBlock = res.content.find((b) => b.type === "text");
-        if (textBlock && textBlock.type === "text") lastText = textBlock.text;
-
-        if (res.stop_reason !== "tool_use") {
-            return { text: lastText, usage, status: "ok", toolCalls, errorCode: null };
-        }
-
-        // Run every requested tool, append results, loop.
-        messages.push({ role: "assistant", content: res.content });
-        const toolResults: Anthropic.ToolResultBlockParam[] = [];
-        for (const block of res.content) {
-            if (block.type !== "tool_use") continue;
-            if (toolCalls >= ASSISTANT_MAX_TOOL_CALLS) {
-                return {
-                    text: lastText || FALLBACK_TEXT,
-                    usage,
-                    status: "tool_error",
-                    toolCalls,
-                    errorCode: "max_tool_calls",
-                };
-            }
-            toolCalls++;
-            const call = normalizeAnthropicToolUse(block);
-            const r = await runTool(input.tools, call.name, call.args);
-            toolResults.push({
-                type: "tool_result",
-                tool_use_id: call.id,
-                content: r.ok ? JSON.stringify(r.result) : `ERROR: ${r.error}`,
-                is_error: !r.ok,
-            });
-        }
-        messages.push({ role: "user", content: toolResults });
-    }
-
-    return {
-        text: lastText || FALLBACK_TEXT,
-        usage,
-        status: "tool_error",
-        toolCalls,
-        errorCode: "max_tool_calls",
-    };
-}
-
-// ── Local leg (Ollama, OpenAI-compatible) ────────────────────────────────────
+// ── Shared OpenAI-compatible transport + loop ────────────────────────────────
 
 type OpenAIMessage =
     | { role: "system" | "user" | "assistant"; content: string }
     | { role: "assistant"; content: string | null; tool_calls?: unknown[] }
     | { role: "tool"; tool_call_id: string; content: string };
 
-async function ollamaChat(body: unknown): Promise<{
-    choices: Array<{
+type OpenAIChatResponse = {
+    choices?: Array<{
         finish_reason: string;
         message: {
             content: string | null;
@@ -160,18 +96,34 @@ async function ollamaChat(body: unknown): Promise<{
             }>;
         };
     }>;
-}> {
-    const res = await fetch(`${OLLAMA_BASE_URL}/chat/completions`, {
+    usage?: { prompt_tokens?: number; completion_tokens?: number };
+};
+
+async function openAIChat(
+    baseUrl: string,
+    apiKey: string | undefined,
+    body: unknown
+): Promise<OpenAIChatResponse> {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        },
         body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`ollama_${res.status}`);
-    return res.json();
+    if (!res.ok) throw new Error(`llm_${res.status}`);
+    return res.json() as Promise<OpenAIChatResponse>;
 }
 
-async function runLocal(input: AgentInput): Promise<AgentResult> {
-    assertLocalOllamaUrl();
+async function runOpenAILoop(opts: {
+    baseUrl: string;
+    apiKey?: string;
+    model: string;
+    captureUsage: boolean;
+    input: AgentInput;
+}): Promise<AgentResult> {
+    const { baseUrl, apiKey, model, captureUsage, input } = opts;
 
     const messages: OpenAIMessage[] = [
         { role: "system", content: input.system },
@@ -182,30 +134,38 @@ async function runLocal(input: AgentInput): Promise<AgentResult> {
 
     let toolCalls = 0;
     let lastText = "";
+    let usage: AgentResult["usage"] = null;
 
     for (let step = 0; step <= ASSISTANT_MAX_TOOL_CALLS; step++) {
-        const data = await ollamaChat({
-            model: OLLAMA_MODEL,
+        const data = await openAIChat(baseUrl, apiKey, {
+            model,
             messages,
             ...(tools.length > 0 ? { tools } : {}),
             stream: false,
         });
+        if (captureUsage && data.usage) {
+            usage = {
+                input_tokens: data.usage.prompt_tokens,
+                output_tokens: data.usage.completion_tokens,
+            };
+        }
+
         const choice = data.choices?.[0];
         const msg = choice?.message;
         if (!msg) {
-            return { text: FALLBACK_TEXT, usage: null, status: "failed", toolCalls, errorCode: "empty_response" };
+            return { text: FALLBACK_TEXT, usage, status: "failed", toolCalls, errorCode: "empty_response" };
         }
         if (msg.content) lastText = msg.content;
 
         const calls = msg.tool_calls ?? [];
         if (choice.finish_reason !== "tool_calls" || calls.length === 0) {
-            return { text: lastText || FALLBACK_TEXT, usage: null, status: "ok", toolCalls, errorCode: null };
+            return { text: lastText || FALLBACK_TEXT, usage, status: "ok", toolCalls, errorCode: null };
         }
 
         messages.push({ role: "assistant", content: msg.content ?? "", tool_calls: calls });
         for (const raw of calls) {
             if (toolCalls >= ASSISTANT_MAX_TOOL_CALLS) {
-                return { text: lastText || FALLBACK_TEXT, usage: null, status: "tool_error", toolCalls, errorCode: "max_tool_calls" };
+                return { text: lastText || FALLBACK_TEXT, usage, status: "tool_error", toolCalls, errorCode: "max_tool_calls" };
             }
             toolCalls++;
             let normalized;
@@ -224,7 +184,34 @@ async function runLocal(input: AgentInput): Promise<AgentResult> {
         }
     }
 
-    return { text: lastText || FALLBACK_TEXT, usage: null, status: "tool_error", toolCalls, errorCode: "max_tool_calls" };
+    return { text: lastText || FALLBACK_TEXT, usage, status: "tool_error", toolCalls, errorCode: "max_tool_calls" };
+}
+
+// ── Cloud leg (OpenRouter) ───────────────────────────────────────────────────
+
+async function runCloud(input: AgentInput): Promise<AgentResult> {
+    if (!OPENROUTER_API_KEY) {
+        return { text: FALLBACK_TEXT, usage: null, status: "failed", toolCalls: 0, errorCode: "no_openrouter_key" };
+    }
+    return runOpenAILoop({
+        baseUrl: OPENROUTER_BASE_URL,
+        apiKey: OPENROUTER_API_KEY,
+        model: CLOUD_MODEL,
+        captureUsage: true,
+        input,
+    });
+}
+
+// ── Local leg (Ollama) ───────────────────────────────────────────────────────
+
+async function runLocal(input: AgentInput): Promise<AgentResult> {
+    assertLocalOllamaUrl();
+    return runOpenAILoop({
+        baseUrl: OLLAMA_BASE_URL,
+        model: OLLAMA_MODEL,
+        captureUsage: false,
+        input,
+    });
 }
 
 export async function runAgent(

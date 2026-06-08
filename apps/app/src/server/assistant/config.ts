@@ -1,8 +1,15 @@
 // M7 assistant — central config + env reading. See homework/M7/PLAN.md §7.1.
 import "server-only";
 
-export const CLAUDE_MODEL =
-    process.env.CLAUDE_MODEL ?? "claude-sonnet-4-5-20250929";
+// Cloud leg — OpenRouter (OpenAI-compatible). The cloud leg is defined by being
+// a REMOTE provider outside our perimeter (the privacy contrast the local leg
+// stands against), not by which model: any cheap remote model works.
+export const OPENROUTER_BASE_URL =
+    process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
+
+export const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+
+export const CLOUD_MODEL = process.env.CLOUD_MODEL ?? "openai/gpt-4o-mini";
 
 export const OLLAMA_BASE_URL =
     process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1";

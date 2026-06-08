@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 import { runAgent } from "@/server/assistant/agent";
-import { CLAUDE_MODEL, ASSISTANT_MAX_MESSAGE_CHARS, OLLAMA_MODEL } from "@/server/assistant/config";
+import { CLOUD_MODEL, ASSISTANT_MAX_MESSAGE_CHARS, OLLAMA_MODEL } from "@/server/assistant/config";
 import { LOCAL_COST, computeCloudCost } from "@/server/assistant/cost";
 import {
     ConversationError,
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
         patch.mode = decision.mode;
 
         const isCloud = decision.target === "cloud";
-        const model = isCloud ? CLAUDE_MODEL : OLLAMA_MODEL;
+        const model = isCloud ? CLOUD_MODEL : OLLAMA_MODEL;
         patch.model = model;
 
         // 3. History — cloud gets public/redacted only.

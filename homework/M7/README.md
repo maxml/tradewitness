@@ -8,7 +8,7 @@
 | Что | Выбор |
 |---|---|
 | Локальная модель | **Ollama локально** (путь A), модель-кандидат `qwen2.5:3b-instruct-q5_K_M` под GTX 1050 Ti 4 GB — фактический тег фиксируется в [`0-deploy.md`](./0-deploy.md) |
-| Облако | Anthropic SDK, `CLAUDE_MODEL` (дефолт `claude-sonnet-4-5-20250929`) |
+| Облако | **OpenRouter** (OpenAI-совместимый), `CLOUD_MODEL` (дефолт `openai/gpt-4o-mini`) — дешёвая remote-модель вне периметра. (PLAN закладывал Anthropic; сменили — см. `writeup-dz1.md`.) |
 | Роутер | **код в Next** (`/api/assistant`), **без n8n** |
 | PII-детект | **Presidio в Docker** (analyzer), + regex-fallback, fail-closed |
 | Логи | Postgres `chat_logs` (Drizzle), админ-дашборд |
@@ -51,6 +51,8 @@ drizzle/0022_supreme_the_fallen.sql  — миграция chat_logs
 - [`PLAN.md`](./PLAN.md) — ТЗ (роутинг, приватность, схема, риски).
 - [`0-deploy.md`](./0-deploy.md) — заметка о локалке + тюнинг + лог вызова.
 - `router/` — роутер кодом (см. `apps/app/src/server/assistant/`), n8n не используется.
-- `demo/` — пруфы на 6–10 запросах (заполняется после прогона).
-- `writeup-dz1.md` — разбор DZ1 (заполняется после демо).
-- `dz2/` — атака/защита инъекций (PLAN §5).
+- `demo/` — пруфы прогона (12 запросов): `dz1-routing.md` (таблица маршрутов, 0 утечек),
+  `dz1-cloud-answers.md` (реальные ответы OpenRouter), `dz1-routing.json`. Харнес:
+  `apps/app/scripts/m7-demo.ts` (`pnpm -C apps/app m7-demo`).
+- `writeup-dz1.md` — разбор DZ1 (заполнен: экономия, GPU, найденные риски).
+- `dz2/` — атака/защита инъекций (PLAN §5, опционально).

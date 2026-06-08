@@ -65,17 +65,35 @@ curl -s localhost:5002/analyze -H 'Content-Type: application/json' \
 
 ---
 
-## ФАКТ (заполнить после прогона)
+## ФАКТ (прогон 2026-06-08)
 
-- Путь: **A — Ollama локально**
-- Модель + **фактический тег**: `__________`
-- Квант: `__________`
-- Endpoint: `http://localhost:11434/v1`
-- tokens/sec **до** тюнинга: `____` · **после**: `____`
-- `ollama ps` PROCESSOR: `____% GPU`
-- Presidio: endpoint `http://localhost:5002`, health: `____`
-- Лог рабочего вызова (с tool-call) — вставить ниже:
+- Путь: **A — Ollama локально**, версия **0.30.6**
+- Модель + **фактический тег**: `qwen2.5:3b-instruct-q5_K_M` (ID `19cf317bd479`, размер на диске 2.2 GB, в VRAM 2.4 GB) — кандидат из плана подтверждён, тег существует в registry.
+- Квант: **q5_K_M** (явно, не дефолтный Q4)
+- Endpoint: **`http://localhost:11435/v1`** ⚠️ **не 11434** — см. «Сетевой подвох» ниже.
+- ENV-тюнинг (§0.1) применён: `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_KEEP_ALIVE=30m`, `OLLAMA_NUM_PARALLEL=1`; per-request `num_ctx=4096`, `num_thread=6`.
+- tokens/sec (тюнинг включён): **prompt_eval ≈ 74 tok/s**, **генерация ≈ 15.4 tok/s** (3B на GTX 1050 Ti — десятки tok/s, как и целились). Отдельный «до тюнинга» замер не делали — модель сразу поднята в тюненом профиле.
+- `ollama ps` PROCESSOR: **100% GPU** (context 4096, KEEP_ALIVE 30m) — модель целиком в 4 GB VRAM, partial offload отсутствует.
+- Presidio: endpoint `http://localhost:5002` — **поднимается отдельно** (Docker, нужен sudo); статус health: `TODO` (закрывается на шаге demo).
+
+### Сетевой подвох (важно для воспроизведения)
+
+Дефолтный **systemd-сервис `ollama` (порт 11434) не смог тянуть модель**: `ollama pull` стабильно падал на стадии `pulling manifest` с `Error: EOF`, хотя `curl` к тому же registry с этой машины возвращал `HTTP 200`. Диагностика:
+1. IPv6 на этой сети битый (`curl -6` к registry → мгновенный отказ `000`); отключили: `sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1` — не помогло.
+2. Юнит `ollama.service` без sandbox-ограничений (нет `RestrictAddressFamilies`/`PrivateNetwork`), но процесс **от пользователя `ollama`** всё равно получал EOF к Cloudflare-хосту registry.
+3. **Обход:** поднят отдельный `ollama serve` **от пользователя `dell`** (сетевой контекст которого рабочий — там же, где `curl`) на порту **11435** со своим `OLLAMA_MODELS=/home/dell/.ollama-m7/models` и тем же ENV-тюнингом → `pull` прошёл, модель скачалась, tool-calling и 100% GPU работают.
+
+> ⚠️ Для приложения: `OLLAMA_BASE_URL=http://localhost:11435/v1` (рабочий dell-сервер). Гард `assertLocalOllamaUrl` (host=localhost) проходит. Для постоянства dell-сервер стоит оформить как user-systemd-юнит либо починить сетевой контекст системного сервиса и перетянуть модель в его стор.
+
+### Лог рабочего вызова с tool-call (OpenAI-совместимый `/v1`, приёмка Части 0)
+
+Запрос: `tools=[get_my_trades]`, system «…you MUST call get_my_trades», user «Show my last 3 trades.»
 
 ```
-<сюда лог curl/скрин>
+$ curl -s http://localhost:11435/v1/chat/completions -d '{... tools:[get_my_trades] ...}'
+tool_calls: [{"id":"call_qphtd1ig","index":0,"type":"function",
+              "function":{"name":"get_my_trades","arguments":"{\"limit\":3}"}}]
+finish_reason: tool_calls
 ```
+
+Заметка: через OpenAI-адаптер `/v1` 3B-модель зовёт тул **надёжно только при жёстком system-промпте + `required`-параметре**; со слабым промптом (особенно на украинском) возвращала пустой ответ без tool_call. Нативный `/api/chat` устойчивее. Вывод для реализации: local-ветке нужен директивный system-промпт «когда спрашивают про данные — ОБЯЗАН вызвать тул».
