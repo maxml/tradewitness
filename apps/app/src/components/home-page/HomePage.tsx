@@ -4,21 +4,58 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
-import { StatsGridPageTwo } from "@/components/StatsGridPageTwo";
+import dynamic from "next/dynamic";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { CustomButton } from "../CustomButton";
-import { StatsGridPageOne } from "@/components/StatsGridPageOne";
 import { SignUpButton } from "@clerk/nextjs";
 import HomePageStart from "./HomePageStart";
-import HomePageReviews from "./HomePageReviews";
-import HomePageCalendar from "./HomePageCalendar";
-import HomePageFooter from "./HomePageFooter";
 import { fakeDataChartTwo, otherData, tradingData } from "@/data/data";
 import Link from "next/link";
-import HomePageAi from "./HomePageAI";
 import { SiClaude } from "react-icons/si";
-import HomePageMobileAiPage from "./HomePageMobileAI";
-import HomePageJournal from "./HomePageJournal";
+
+// Lightweight placeholder shown while a deferred section loads.
+const SectionFallback = () => (
+    <div className="flex-center py-16">
+        <div className="running-algorithm">
+            <span className="dot"></span>
+            <span className="dot"></span>
+            <span className="dot"></span>
+        </div>
+    </div>
+);
+
+// The recharts-based stat grids are the heaviest part of the page's client
+// bundle. They are interactive client charts (no useful SSR output), so we
+// code-split them into their own chunks and skip SSR entirely.
+const StatsGridPageOne = dynamic(
+    () => import("@/components/StatsGridPageOne").then((m) => m.StatsGridPageOne),
+    { ssr: false, loading: SectionFallback }
+);
+const StatsGridPageTwo = dynamic(
+    () => import("@/components/StatsGridPageTwo").then((m) => m.StatsGridPageTwo),
+    { ssr: false, loading: SectionFallback }
+);
+// Below-the-fold marketing sections are code-split (smaller prod bundle / faster
+// client load) but kept server-rendered (default ssr: true) so their content
+// still appears in the initial HTML.
+const HomePageAi = dynamic(() => import("./HomePageAI"), {
+    loading: SectionFallback,
+});
+const HomePageMobileAiPage = dynamic(() => import("./HomePageMobileAI"), {
+    loading: SectionFallback,
+});
+const HomePageCalendar = dynamic(() => import("./HomePageCalendar"), {
+    loading: SectionFallback,
+});
+const HomePageJournal = dynamic(() => import("./HomePageJournal"), {
+    loading: SectionFallback,
+});
+const HomePageReviews = dynamic(() => import("./HomePageReviews"), {
+    loading: SectionFallback,
+});
+const HomePageFooter = dynamic(() => import("./HomePageFooter"), {
+    loading: SectionFallback,
+});
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
