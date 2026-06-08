@@ -12,6 +12,10 @@ import HomePageStart from "./HomePageStart";
 import { fakeDataChartTwo, otherData, tradingData } from "@/data/data";
 import Link from "next/link";
 import { SiClaude } from "react-icons/si";
+import {
+    StatsGridPageOne,
+    StatsGridPageTwo,
+} from "@/components/StatsGridDynamic";
 
 // Lightweight placeholder shown while a deferred section loads.
 const SectionFallback = () => (
@@ -24,20 +28,10 @@ const SectionFallback = () => (
     </div>
 );
 
-// The recharts-based stat grids are the heaviest part of the page's client
-// bundle. They are interactive client charts (no useful SSR output), so we
-// code-split them into their own chunks and skip SSR entirely.
-const StatsGridPageOne = dynamic(
-    () => import("@/components/StatsGridPageOne").then((m) => m.StatsGridPageOne),
-    { ssr: false, loading: SectionFallback }
-);
-const StatsGridPageTwo = dynamic(
-    () => import("@/components/StatsGridPageTwo").then((m) => m.StatsGridPageTwo),
-    { ssr: false, loading: SectionFallback }
-);
 // Below-the-fold marketing sections are code-split (smaller prod bundle / faster
 // client load) but kept server-rendered (default ssr: true) so their content
-// still appears in the initial HTML.
+// still appears in the initial HTML. The @mui/x-charts stat grids are imported
+// (lazily, ssr: false) from the shared StatsGridDynamic module.
 const HomePageAi = dynamic(() => import("./HomePageAI"), {
     loading: SectionFallback,
 });

@@ -26,7 +26,6 @@ const nextConfig: NextConfig = {
             "@radix-ui/react-tabs",
             "@reduxjs/toolkit",
             "react-redux",
-            "recharts",
             "date-fns",
             "dayjs",
         ],

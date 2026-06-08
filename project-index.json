@@ -520,6 +520,7 @@
       "Filtering.tsx",
       "MobileNavigation.tsx",
       "ReduxProvider.tsx",
+      "StatsGridDynamic.tsx",
       "StatsGridPageOne.tsx",
       "StatsGridPageTwo.tsx",
       "admin",
@@ -774,5 +775,5 @@
     "m3_corpus": "docs/m3-corpus/adrs are Lorem-ipsum placeholders (corpus padding), not real decisions. Real ADRs are docs/adr/0001-0003.",
     "audit": "See homework/M6/stage3-living-docs/docs-audit.md for the full ✅/🔄/📦/❌ verdict per docs item."
   },
-  "last_updated": "2026-06-08T12:06:20.091218+00:00"
+  "last_updated": "2026-06-08T12:26:02.093018+00:00"
 }
