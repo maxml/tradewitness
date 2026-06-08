@@ -24,7 +24,8 @@
 - Fail-closed (Presidio down → local) ✅ · порядок (user-data > public) ✅ · история не течёт в cloud ✅
 - **Дашборд (live):** в `chat_logs` засеяно 7 реальных строк тем же кодом, что и `/api/assistant`
   (`scripts/m7-seed-dashboard.ts`) — PII замаскирован в message И response, local=$0/cloud=$,
-  строка `<REDACTION_UNAVAILABLE>`, эскалация sensitivity по ответу. Снапшот данных:
+  строка `<REDACTION_UNAVAILABLE>`, эскалация sensitivity по ответу. Скрин:
+  [demo/dashboard-screenshot.png](./demo/dashboard-screenshot.png) · данные текстом:
   [demo/dz1-dashboard-snapshot.md](./demo/dz1-dashboard-snapshot.md).
 - **История не течёт в cloud (live DB round-trip):** [demo/dz1-history-no-leak.md](./demo/dz1-history-no-leak.md)
   — `loadHistory(publicOnly:true)` = `[]`, полная история видна только локально.
@@ -66,8 +67,8 @@ pnpm tsx scripts/m7-dz2-attack.ts  # DZ2: before/after  → homework/M7/dz2/
 
 - **Raw `userMessage`/`assistantResponse` остаются в БД** (retention/backup их видят); защищён только периметр app/admin-UI (redacted-select, fail-closed masking). Не encrypted-at-rest.
 - **EN-Presidio на кириллице** — ложные/пропущенные имена; полноценно лечится uk/ru-recognizer (риск §8), для homework — fail-safe.
-- **Дашборд** засеян реальными строками через тот же код (`scripts/m7-seed-dashboard.ts`); скрин
-  снимается после логина админа (`ADMIN_EMAILS`) на `/private/admin/chat-logs` — `demo/dashboard-screenshot.*`.
+- **Дашборд** засеян реальными строками через тот же код (`scripts/m7-seed-dashboard.ts`) и снят живьём:
+  [demo/dashboard-screenshot.png](./demo/dashboard-screenshot.png) — маскинг в message/response, local=$0/cloud=$, `<REDACTION_UNAVAILABLE>`.
 - **Local Ollama-сервер** :11435 поднят под пользователем dell (системный сервис не тянул модели — сетевой подвох в 0-deploy.md); для постоянства оформить user-systemd-юнит.
 
 ## 7. Артефакты
