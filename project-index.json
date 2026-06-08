@@ -327,9 +327,16 @@
       "0-deploy.md",
       "PLAN.md",
       "README.md",
+      "REVIEW.md",
       "demo",
+      "dz2",
       "router",
       "writeup-dz1.md"
+    ],
+    "homework/M7/dz2": [
+      "attack-log.json",
+      "attack-log.md",
+      "writeup-dz2.md"
     ],
     "homework/M7/router": [
       "README.md"
@@ -498,6 +505,7 @@
     ],
     "apps/app/scripts": [
       "m7-demo.ts",
+      "m7-dz2-attack.ts",
       "prune-chat-logs.ts"
     ],
     "apps/app/src": [
@@ -801,5 +809,5 @@
     "m3_corpus": "docs/m3-corpus/adrs are Lorem-ipsum placeholders (corpus padding), not real decisions. Real ADRs are docs/adr/0001-0003.",
     "audit": "See homework/M6/stage3-living-docs/docs-audit.md for the full ✅/🔄/📦/❌ verdict per docs item."
   },
-  "last_updated": "2026-06-08T11:23:50.224217+00:00"
+  "last_updated": "2026-06-08T11:37:40.773747+00:00"
 }

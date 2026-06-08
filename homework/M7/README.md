@@ -1,6 +1,10 @@
 # M7 — Приватный AI-ассистент с роутером по чувствительности
 
-Реализация для **TradeWitness** (Next.js / Postgres / Drizzle / Clerk / Anthropic).
+Реализация для **TradeWitness** (Next.js / Postgres / Drizzle / Clerk / OpenRouter).
+
+> 👉 **Для быстрой проверки — [`REVIEW.md`](./REVIEW.md)**: все решения, результаты DZ1+DZ2,
+> что проверять и как воспроизвести, на одной странице.
+
 Полное ТЗ — [`PLAN.md`](./PLAN.md). Это README — что построено, выбор стека, как запустить.
 
 ## Выбор (решения)
