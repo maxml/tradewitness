@@ -41,3 +41,15 @@ services:
       # Lets the container reach services on the host (MCP, Next.js app)
       # via http://host.docker.internal:<port>. Required on native Linux.
       - "host.docker.internal:host-gateway"
+
+  # M7 — Presidio analyzer for PII detection (the router's "customs officer").
+  # CPU-only, light; the routing decision is always cheaper than the work it
+  # routes. See homework/M7/PLAN.md §2, §4.2.
+  #   docker compose up -d presidio-analyzer
+  #   curl -s localhost:5002/health
+  presidio-analyzer:
+    image: mcr.microsoft.com/presidio-analyzer:latest
+    container_name: presidio-analyzer-m7
+    restart: unless-stopped
+    ports:
+      - "5002:3000"

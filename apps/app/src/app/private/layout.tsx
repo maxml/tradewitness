@@ -1,6 +1,7 @@
 import { getAllTradeRecords } from "@/server/actions/trades";
 import { getAllStrategies } from "@/server/actions/strategies";
 import PrivateLayoutClient from "@/components/private-layout/PrivateLayoutClient";
+import { AssistantWidget } from "@/components/assistant/AssistantWidget";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Strategy } from "@/types/strategies.types";
 
@@ -28,11 +29,15 @@ export default async function PrivateLayout({
     const isAdmin = !!primaryEmail && adminEmails.includes(primaryEmail);
 
     return (
-        <PrivateLayoutClient
-            initialTradeRecords={tradeRecords}
-            initialStrategies={strategies}
-            isAdmin={isAdmin}>
-            {children}
-        </PrivateLayoutClient>
+        <>
+            <PrivateLayoutClient
+                initialTradeRecords={tradeRecords}
+                initialStrategies={strategies}
+                isAdmin={isAdmin}>
+                {children}
+            </PrivateLayoutClient>
+            {/* M7 assistant — client-only, lazy; no data fetched until opened. */}
+            <AssistantWidget />
+        </>
     );
 }

@@ -1,0 +1,205 @@
+{
+  "rows": [
+    {
+      "id": "pii-email",
+      "msg": "Скинь звіт на пошту john@example.com",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "pii-in-message: LOCATION, EMAIL_ADDRESS",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [
+        "LOCATION",
+        "EMAIL_ADDRESS"
+      ],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "PII в тексте: EMAIL (regex+Presidio)"
+    },
+    {
+      "id": "pii-phone",
+      "msg": "Телефон для зв'язку +380671234567",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "pii-in-message: PERSON, PHONE_NUMBER",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [
+        "PERSON",
+        "PHONE_NUMBER"
+      ],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "PII в тексте: PHONE +380 (regex)"
+    },
+    {
+      "id": "pii-card",
+      "msg": "Оплата карткою 4111 1111 1111 1111",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "pii-in-message: CREDIT_CARD",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [
+        "CREDIT_CARD"
+      ],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "PII в тексте: CREDIT_CARD (regex)"
+    },
+    {
+      "id": "pii-name-en",
+      "msg": "My name is John Smith, hello",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "pii-in-message: PERSON",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [
+        "PERSON"
+      ],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "PII в тексте: PERSON (Presidio EN)"
+    },
+    {
+      "id": "pii-name-uk",
+      "msg": "Мене звати Олександр Ковальчук",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "pii-in-message: PERSON",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [
+        "PERSON"
+      ],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "uk-имя → PERSON (cyrillic, fail-safe local)"
+    },
+    {
+      "id": "data-trades",
+      "msg": "покажи мої останні трейди",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "requires user-owned data",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "user-owned данные (текст чистый) → local"
+    },
+    {
+      "id": "data-capital",
+      "msg": "скільки в мене капіталу?",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "pii-in-message: PERSON",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [
+        "PERSON"
+      ],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "user-owned данные → local (intent + Presidio cyrillic-noise)"
+    },
+    {
+      "id": "pub-rr-uk",
+      "msg": "що таке risk/reward?",
+      "expect": "cloud",
+      "target": "cloud",
+      "verdict": "ok",
+      "reason": "public-intent allowlist",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [],
+      "model": "openai/gpt-4o-mini",
+      "costUsd": 0.000128,
+      "note": "чисто-публичный (uk, без кириллицы-имён) → cloud"
+    },
+    {
+      "id": "pub-rr-en",
+      "msg": "what is risk/reward in trading?",
+      "expect": "cloud",
+      "target": "cloud",
+      "verdict": "ok",
+      "reason": "public-intent allowlist",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [],
+      "model": "openai/gpt-4o-mini",
+      "costUsd": 0.00012,
+      "note": "чисто-публичный (en) → cloud"
+    },
+    {
+      "id": "pub-stop-uk",
+      "msg": "поясни, що таке стоп-лосс",
+      "expect": "cloud",
+      "target": "local",
+      "verdict": "safe-overlocal",
+      "reason": "pii-in-message: PERSON",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [
+        "PERSON"
+      ],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "публичный (uk): EN-Presidio ложно метит PERSON(0.85) → local (fail-safe, риск §8)"
+    },
+    {
+      "id": "order-winrate",
+      "msg": "поясни мій win rate",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "requires user-owned data",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "ПОРЯДОК: user-owned intent перебивает public-allowlist → local"
+    },
+    {
+      "id": "ambiguous",
+      "msg": "доброго ранку",
+      "expect": "local",
+      "target": "local",
+      "verdict": "ok",
+      "reason": "ambiguous (default local)",
+      "mode": "default",
+      "redactionStatus": "ok",
+      "pii": [],
+      "model": "qwen2.5:3b-instruct-q5_K_M",
+      "costUsd": 0,
+      "note": "ambiguous → local (cloud не fallback)"
+    }
+  ],
+  "failClosed": {
+    "target": "local",
+    "reason": "pii-detector-unavailable (fail-closed)",
+    "mode": "default"
+  },
+  "cloudHistory": [
+    {
+      "role": "user",
+      "content": "що таке risk/reward?"
+    },
+    {
+      "role": "assistant",
+      "content": "Risk/reward — це співвідношення..."
+    }
+  ],
+  "cloudCostTotal": 0.000248,
+  "hypotheticalSaved": 0.0016906500000000001
+}

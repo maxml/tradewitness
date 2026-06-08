@@ -155,6 +155,13 @@
       "when": 1777111068897,
       "tag": "0021_lyrical_exiles",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1780485092769,
+      "tag": "0022_supreme_the_fallen",
+      "breakpoints": true
     }
   ]
 }

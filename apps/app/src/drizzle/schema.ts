@@ -2,14 +2,24 @@ import { Rule, CloseEvent } from "@/types/dbSchema.types";
 import { relations } from "drizzle-orm";
 import {
     boolean,
+    doublePrecision,
     index,
     integer,
     jsonb,
     pgTable,
     text,
     timestamp,
+    unique,
     uuid,
 } from "drizzle-orm/pg-core";
+
+/** One detected PII entity — spans + type + score only, NEVER the matched text. */
+export type DetectedPiiSpan = {
+    type: string;
+    start: number;
+    end: number;
+    score: number;
+};
 
 export const UserTable = pgTable("user", {
     id: text("id").notNull().unique(),
@@ -146,6 +156,58 @@ export const JournalTable = pgTable(
             table.userId,
             table.date
         ),
+    })
+);
+
+// M7 — AI assistant chat logs (row-per-turn). See homework/M7/PLAN.md §4.5.
+// Privacy: raw user_message/assistant_response are server/local-flow only;
+// the admin dashboard reads ONLY the redacted_* columns (AdminChatLogRow).
+export const ChatLogsTable = pgTable(
+    "chat_logs",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        conversationId: uuid("conversation_id").notNull(),
+        // Stable ordering within a conversation even when createdAt collides.
+        turnIndex: integer("turn_index").notNull(),
+        userId: text("user_id")
+            .notNull()
+            .references(() => UserTable.id),
+        // "private" | "public" — server-trusted; cloud context is built only from public turns.
+        sensitivity: text("sensitivity").notNull().default("private"),
+        userMessage: text("user_message").notNull(),
+        redactedUserMessage: text("redacted_user_message"),
+        assistantResponse: text("assistant_response"),
+        redactedAssistantResponse: text("redacted_assistant_response"),
+        // Spans only (type/start/end/score) — never the matched values.
+        detectedPii: jsonb("detected_pii").$type<DetectedPiiSpan[]>().default([]),
+        // "ok" | "unavailable" | "fallback" — kept separate so a partial failure can't hide.
+        userRedactionStatus: text("user_redaction_status"),
+        assistantRedactionStatus: text("assistant_redaction_status"),
+        // "pending" | "ok" | "failed" | "timeout" | "tool_error" — reserved-row lifecycle.
+        status: text("status").notNull().default("pending"),
+        errorCode: text("error_code"),
+        errorMessageRedacted: text("error_message_redacted"),
+        route: text("route"), // "local" | "cloud"
+        mode: text("mode"),
+        model: text("model"),
+        latencyMs: integer("latency_ms"),
+        costUsd: doublePrecision("cost_usd"),
+        costReason: text("cost_reason"),
+        createdAt: timestamp("created_at", { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => ({
+        // Guards against two parallel sends racing on the same turn slot.
+        convTurnUnique: unique("chat_logs_conversation_turn_unique").on(
+            table.conversationId,
+            table.turnIndex
+        ),
+        userConvIndex: index("chat_logs_user_conversation_idx").on(
+            table.userId,
+            table.conversationId
+        ),
+        createdAtIndex: index("chat_logs_created_at_idx").on(table.createdAt),
     })
 );
 

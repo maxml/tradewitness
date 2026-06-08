@@ -11,6 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:prune-chat-logs": "tsx scripts/prune-chat-logs.ts",
+    "m7-demo": "NODE_OPTIONS='--conditions=react-server' tsx scripts/m7-demo.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
