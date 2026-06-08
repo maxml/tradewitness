@@ -22,6 +22,12 @@
 - **Утечек private→cloud: 0** ✅ (главный критерий приёмки)
 - PII (email/phone/card/PERSON, в т.ч. uk) → local ✅ · user-owned → local ✅ · публичный → cloud ✅ (2 реальных вызова, $0.000248)
 - Fail-closed (Presidio down → local) ✅ · порядок (user-data > public) ✅ · история не течёт в cloud ✅
+- **Дашборд (live):** в `chat_logs` засеяно 7 реальных строк тем же кодом, что и `/api/assistant`
+  (`scripts/m7-seed-dashboard.ts`) — PII замаскирован в message И response, local=$0/cloud=$,
+  строка `<REDACTION_UNAVAILABLE>`, эскалация sensitivity по ответу. Снапшот данных:
+  [demo/dz1-dashboard-snapshot.md](./demo/dz1-dashboard-snapshot.md).
+- **История не течёт в cloud (live DB round-trip):** [demo/dz1-history-no-leak.md](./demo/dz1-history-no-leak.md)
+  — `loadHistory(publicOnly:true)` = `[]`, полная история видна только локально.
 - **Локалка:** 100% GPU, ~15 tok/s, рабочий tool-call — [0-deploy.md](./0-deploy.md)
 - **Экономия:** 10/12 запросов бесплатно ($0.00) и в периметре; оценка сэкономленного ~$0.0017 — [writeup-dz1.md](./writeup-dz1.md)
 - **Честная находка:** EN-Presidio шумит на кириллице (ложный PERSON 0.85) → часть публичных uk-запросов уходит в local. Это **fail-safe** (без утечки), риск §8.
@@ -60,7 +66,8 @@ pnpm tsx scripts/m7-dz2-attack.ts  # DZ2: before/after  → homework/M7/dz2/
 
 - **Raw `userMessage`/`assistantResponse` остаются в БД** (retention/backup их видят); защищён только периметр app/admin-UI (redacted-select, fail-closed masking). Не encrypted-at-rest.
 - **EN-Presidio на кириллице** — ложные/пропущенные имена; полноценно лечится uk/ru-recognizer (риск §8), для homework — fail-safe.
-- **Живой UI (виджет+дашборд)** требует доступной БД (Supabase); demo-харнесы БД не используют намеренно.
+- **Дашборд** засеян реальными строками через тот же код (`scripts/m7-seed-dashboard.ts`); скрин
+  снимается после логина админа (`ADMIN_EMAILS`) на `/private/admin/chat-logs` — `demo/dashboard-screenshot.*`.
 - **Local Ollama-сервер** :11435 поднят под пользователем dell (системный сервис не тянул модели — сетевой подвох в 0-deploy.md); для постоянства оформить user-systemd-юнит.
 
 ## 7. Артефакты
